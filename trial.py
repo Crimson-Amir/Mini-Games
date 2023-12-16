@@ -1,6 +1,11 @@
-from random import randint
 
-if randint(0, 2):
-    print('1')
-else:
-    print('2')
+variable = 0
+
+
+def hello():
+    global variable
+    variable = 1
+
+print(variable)
+hello()
+print(variable)

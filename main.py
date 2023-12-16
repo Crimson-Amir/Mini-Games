@@ -1,5 +1,8 @@
 import pygame
 from sys import exit
+import random
+
+ENEMY_BUTTON = 420
 
 
 def show_score():
@@ -9,6 +12,27 @@ def show_score():
     score_rect = score.get_rect(topleft=(20, 15))
     screen.blit(score, score_rect)
     return score_float
+
+
+def spawn_enemy(enemy_array):
+    global game_active
+    if enemy_array:
+        for enemy in enemy_array:
+            enemy.right -= 5
+
+            if player_stay_rect.colliderect(enemy):
+                game_active = False
+                break
+
+            if enemy.bottom == ENEMY_BUTTON:
+                screen.blit(enemy_image, enemy)
+            else:
+                screen.blit(enemy_fly, enemy)
+
+        enemy_array = [enemye for enemye in enemy_array if enemye.right >= 0]
+        return enemy_array
+    else:
+        return []
 
 
 pygame.init()
@@ -22,8 +46,12 @@ background_rest = background.get_rect(topleft=(0, 0))
 player_stay = pygame.image.load('img/player-stay.png').convert_alpha()
 player_stay_rect = player_stay.get_rect(topleft=(150, 320))
 
-knife = pygame.image.load('img/knife.png').convert_alpha()
-knife_rect = knife.get_rect(midtop=(1000, 325))
+enemy_image = pygame.image.load('img/knife.png').convert_alpha()
+enemy_image = pygame.transform.rotate(enemy_image, 10)
+enemy_fly = pygame.image.load('img/flight-knife.png').convert_alpha()
+# knife_rect = knife.get_rect(center=(1000, 325))
+
+enemy_spawn_list = []
 
 text_font = pygame.font.Font('font/NineTsukiRegular.ttf', 50)
 
@@ -43,25 +71,24 @@ userevent = pygame.USEREVENT + 1
 pygame.time.set_timer(userevent, 1500)
 
 while True:
-    print(a)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
-        if event.type == userevent:
-            print('1')
+        if event.type == userevent and game_active:
+            if random.randint(0, 2):
+                enemy_spawn_list.append(enemy_image.get_rect(bottomright=(random.randint(1000, 1300), ENEMY_BUTTON)))
+            else:
+                enemy_spawn_list.append(enemy_fly.get_rect(bottomright=(random.randint(1000, 1300), 300)))
 
     if game_active:
         screen.blit(background, background_rest)
-        screen.blit(knife, knife_rect)
+        # screen.blit(knife, knife_rect)
+        enemy_spawn_list = spawn_enemy(enemy_spawn_list)
         screen.blit(player_stay, player_stay_rect)
         SCORE = show_score()
 
         background_rest.right -= 5
-        knife_rect.right -= 5
-
-        if knife_rect.right <= 0:
-            knife_rect.right = 1000
         if background_rest.right <= 1000:
             background_rest.right = 3000
         player_gravity += 1
@@ -78,11 +105,10 @@ while True:
         #     game_active = 0
     else:
         screen.fill('yellow')
-
         key = pygame.key.get_pressed()
         if key[pygame.K_SPACE]:
             game_active = 1
-            knife_rect.x = 1000
+            enemy_spawn_list.clear()
         if SCORE > high_score:
             high_score = SCORE
 
