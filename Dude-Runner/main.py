@@ -81,7 +81,7 @@ enemy_spawn_list = []
 
 text_font = pygame.font.Font('font/NineTsukiRegular.ttf', 50)
 
-game_over_text = text_font.render('TRY ONE MORE TIME', False, 'Black')
+game_over_text = text_font.render('WILL YOU MARRY ME?', False, 'Black')
 game_over_text_rect = game_over_text.get_rect(center=(480, 120))
 
 player_dead = pygame.image.load('img/dead_player.png').convert_alpha()
@@ -105,7 +105,7 @@ while True:
             if random.randint(0, 2):
                 enemy_spawn_list.append(enemy_image.get_rect(bottomright=(random.randint(1000, 1300), ENEMY_BUTTON)))
             else:
-                enemy_spawn_list.append(enemy_fly.get_rect(bottomright=(random.randint(1000, 1300), 300)))
+                enemy_spawn_list.append(enemy_fly.get_rect(bottomright=(random.randint(1000, 1300), 250)))
 
     if game_active:
         screen.blit(background, background_rest)
@@ -122,11 +122,11 @@ while True:
         player_gravity += 1
         player_stay_rect.y += player_gravity
 
-        if player_stay_rect.y > 320:
-            player_stay_rect.y = 320
+        if player_stay_rect.y > 268:
+            player_stay_rect.y = 268
 
         key = pygame.key.get_pressed()
-        if key[pygame.K_SPACE] and player_stay_rect.y >= 300:
+        if key[pygame.K_SPACE] and player_stay_rect.y >= 248:
             player_gravity = -20
 
         # if player_stay_rect.colliderect(knife_rect):
