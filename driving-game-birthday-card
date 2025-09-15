@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Farida's Driving Challenge - Happy Birthday!</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    touch-action: manipulation;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    overflow: hidden;
+    position: relative;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#gameContainer {
+    width: 100%;
+    max-width: 400px;
+    height: 100vh;
+    max-height: 800px;
+    position: relative;
+    background: #2d3748;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+#ui {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(180deg, #4a5568 0%, #2d3748 100%);
+    padding: 15px;
+    z-index: 100;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+#score {
+    color: white;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+#encouragement {
+    color: #fbd38d;
+    font-size: 14px;
+    text-align: center;
+    margin-bottom: 8px;
+    min-height: 20px;
+}
+
+#progressBar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+#progressFill {
+    height: 100%;
+    background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+#muteBtn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+#muteBtn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+#gameCanvas {
+    position: absolute;
+    top: 100px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: calc(100% - 100px);
+}
+
+#startScreen, #certificateScreen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    z-index: 200;
+}
+
+#startScreen h1 {
+    color: white;
+    font-size: 28px;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#startScreen p {
+    color: rgba(255,255,255,0.9);
+    font-size: 16px;
+    margin-bottom: 30px;
+    text-align: center;
+    line-height: 1.5;
+}
+
+.startBtn {
+    background: white;
+    color: #667eea;
+    border: none;
+    padding: 15px 40px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.startBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+#certificate {
+    background: white;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+    max-width: 350px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    border: 3px solid gold;
+}
+
+#certificate::before {
+    content: '🎉';
+    position: absolute;
+    top: -20px;
+    left: 20px;
+    font-size: 40px;
+}
+
+#certificate::after {
+    content: '🎂';
+    position: absolute;
+    top: -20px;
+    right: 20px;
+    font-size: 40px;
+}
+
+#certificate h2 {
+    color: #2d3748;
+    font-size: 24px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+#certificate h3 {
+    color: #e53e3e;
+    font-size: 28px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+}
+
+#certificate p {
+    color: #4a5568;
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.persian {
+    font-size: 20px;
+    color: #764ba2;
+    margin: 15px 0;
+    font-weight: bold;
+}
+
+.certButtons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.certBtn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.certBtn:hover {
+    transform: scale(1.05);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.teaEaster {
+    position: absolute;
+    background: #fbd38d;
+    color: #2d3748;
+    padding: 8px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    z-index: 150;
+    animation: fadeInOut 3s ease;
+    pointer-events: none;
+}
+
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(10px); }
+    50% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (max-width: 400px) {
+    #certificate h3 {
+        font-size: 24px;
+    }
+    #certificate h2 {
+        font-size: 20px;
+    }
+}
+</style>
+</head>
+<body>
+<div id="gameContainer">
+    <!-- Start Screen -->
+    <div id="startScreen">
+        <h1>🚗 Farida's Driving Challenge 🎂</h1>
+        <p>Happy Birthday! Clear 20 obstacles to earn your special certificate!</p>
+        <p style="font-size: 14px; opacity: 0.9;">Swipe left/right on mobile<br>Arrow keys on desktop</p>
+        <button class="startBtn" onclick="startGame()">Start Driving!</button>
+    </div>
+
+    <!-- Game UI -->
+    <div id="ui" class="hidden">
+        <div id="score">Obstacles Cleared: 0 / 20</div>
+        <div id="encouragement">You're doing great, Farida!</div>
+        <div id="progressBar">
+            <div id="progressFill"></div>
+        </div>
+        <button id="muteBtn" onclick="toggleMute()">🔊</button>
+    </div>
+
+    <!-- Game Canvas -->
+    <canvas id="gameCanvas" class="hidden"></canvas>
+
+    <!-- Certificate Screen -->
+    <div id="certificateScreen" class="hidden">
+        <div id="certificate">
+            <h2>🏆 Driver's Certificate — Officially Passed! 🏆</h2>
+            <h3>Happy Birthday, Farida!</h3>
+            <p><strong>To Farida —</strong><br>
+            From Afghanistan to Canada, from nervous tests to confident steering. Keep learning, keep smiling.</p>
+            <p style="color: #38a169; font-weight: bold;">Failed test? No problem — every great driver had to try again.</p>
+            <p style="font-size: 12px;">🍳 Thank you for cooking such an amazing daughter!</p>
+            <div class="persian">تولدت مبارک فریده</div>
+            <div class="certButtons">
+                <button class="certBtn" onclick="downloadCertificate()">📥 Download PNG</button>
+                <button class="certBtn" onclick="playAgain()">🎮 Play Again</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+window.startGame = startGame;
+window.toggleMute = toggleMute;
+window.downloadCertificate = downloadCertificate;
+window.shareCertificate = shareCertificate;
+window.playAgain = playAgain;
+// ================================================================================
+// GAME CONFIGURATION - Easily adjustable parameters
+// ================================================================================
+const GAME_CONFIG = {
+    OBSTACLES_TO_WIN: 20,  // Change this to adjust how many obstacles to clear
+    PLAYER_NAME: "Farida",  // Change this to customize player name
+    INITIAL_SPEED: 2,      // Starting speed of obstacles
+    SPEED_INCREMENT: 0.3,   // Speed increase every few obstacles
+    SPEED_INCREASE_INTERVAL: 4, // Increase speed every N obstacles
+    MAX_SPEED: 6,          // Maximum speed cap
+    LANE_COUNT: 3,         // Number of lanes
+    OBSTACLE_HEIGHT: 40,   // Height of obstacles
+    OBSTACLE_WIDTH: 30,    // Width of obstacles
+    CAR_WIDTH: 35,         // Player car width
+    CAR_HEIGHT: 50,        // Player car height
+    COLLISION_SLOWDOWN: 0.5, // Speed multiplier on collision
+    COLLISION_DURATION: 500, // Collision effect duration in ms
+};
+
+// Certificate messages - easily customizable
+const CERTIFICATE_MESSAGE = {
+    title: "Driver's Certificate — Officially Passed!",
+    heading: `Happy Birthday, ${GAME_CONFIG.PLAYER_NAME}!`,
+    message: `To ${GAME_CONFIG.PLAYER_NAME} — From Afghanistan to Canada, from nervous tests to confident steering. Keep learning, keep smiling.`,
+    encouragement: "Failed test? No problem — every great driver had to try again.",
+    persian: "تولدت مبارک فریده",
+    chef: "Chef's bonus: good cooking = bonus charm!"
+};
+
+// ================================================================================
+// GAME STATE
+// ================================================================================
+let gameState = {
+    isPlaying: false,
+    obstaclesPassed: 0,
+    currentSpeed: GAME_CONFIG.INITIAL_SPEED,
+    playerLane: 1, // 0=left, 1=center, 2=right
+    obstacles: [],
+    lastObstacleTime: 0,
+    isColliding: false,
+    collisionTime: 0,
+    muted: false,
+    teaEasterShown: false,
+    animationId: null
+};
+
+// ================================================================================
+// CANVAS AND RENDERING
+// ================================================================================
+let canvas, ctx;
+let laneWidth, gameHeight;
+
+function initCanvas() {
+    canvas = document.getElementById('gameCanvas');
+    ctx = canvas.getContext('2d');
+    
+    // Handle high DPI screens
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    
+    ctx.scale(dpr, dpr);
+    
+    // Calculate dimensions
+    laneWidth = rect.width / GAME_CONFIG.LANE_COUNT;
+    gameHeight = rect.height;
+}
+
+// ================================================================================
+// AUDIO SYSTEM - Using Web Audio API for small sounds
+// ================================================================================
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+function playAgain() {
+    document.getElementById('certificateScreen').classList.add('hidden');
+    resetGame();
+    gameState.isPlaying = true;
+    gameLoop();
+}
+
+// ================================================================================
+// INITIALIZATION
+// ================================================================================
+window.addEventListener('load', () => {
+    // Resume audio context on first interaction (for mobile browsers)
+    document.addEventListener('click', () => {
+        if (audioContext.state === 'suspended') {
+            audioContext.resume();
+        }
+    }, { once: true });
+});
+
+// Make functions available globally for onclick handlers
+
+
+// ================================================================================
+// GAME LOGIC DOCUMENTATION
+// ================================================================================
+/*
+HOW THE GAME WORKS:
+1. The game uses HTML5 Canvas for rendering and requestAnimationFrame for smooth animation
+2. Player car stays at bottom, obstacles spawn at top and move down
+3. Three lanes system with swipe/keyboard controls to switch between them
+4. Collision detection checks if obstacle and player are in same lane when passing
+5. Speed gradually increases every 4 obstacles for difficulty curve
+6. Certificate screen appears after clearing 20 obstacles
+
+KEY PARAMETERS TO MODIFY:
+- OBSTACLES_TO_WIN: Change in GAME_CONFIG to adjust difficulty (default: 20)
+- PLAYER_NAME: Change in GAME_CONFIG to customize for different person
+- INITIAL_SPEED: Starting speed of obstacles (default: 2)
+- SPEED_INCREMENT: How much speed increases (default: 0.3)
+- MAX_SPEED: Maximum speed cap to keep game playable (default: 6)
+
+CUSTOMIZING CERTIFICATE:
+- Edit CERTIFICATE_MESSAGE object to change all text
+- Persian text can be modified in the 'persian' field
+- Download function creates a canvas-based PNG image
+- Share function uses Web Share API where available
+
+ADDING NEW FEATURES:
+- Power-ups: Add to obstacles array with type field
+- Score system: Track points in gameState
+- Levels: Add level progression after each OBSTACLES_TO_WIN
+- Animations: Use CSS animations or canvas transforms
+*/
+
+
+function playSound(frequency, duration, type = 'sine') {
+    if (gameState.muted) return;
+    try {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = frequency;
+        oscillator.type = type;
+
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(
+            0.01,
+            audioContext.currentTime + duration
+        );
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + duration);
+    } catch (e) {
+        console.log('Audio not supported');
+    }
+}
+
+
+function playPassSound() {
+    playSound(523, 0.1); // C5 note
+    setTimeout(() => playSound(659, 0.1), 50); // E5 note
+}
+
+function playCollisionSound() {
+    playSound(150, 0.2, 'sawtooth');
+}
+
+function playHonk() {
+    playSound(300, 0.1, 'square');
+    setTimeout(() => playSound(250, 0.1, 'square'), 100);
+}
+
+// ================================================================================
+// TOUCH AND KEYBOARD CONTROLS
+// ================================================================================
+let touchStartX = null;
+
+function setupControls() {
+    // Touch controls
+    canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        touchStartX = e.touches[0].clientX;
+    });
+    
+    canvas.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        if (touchStartX === null) {
+            playHonk();
+            return;
+        }
+        
+        const touchEndX = e.changedTouches[0].clientX;
+        const diff = touchEndX - touchStartX;
+        
+        if (Math.abs(diff) < 30) {
+            playHonk();
+        } else if (diff > 30) {
+            movePlayer(1); // Move right
+        } else if (diff < -30) {
+            movePlayer(-1); // Move left
+        }
+        
+        touchStartX = null;
+    });
+    
+    // Keyboard controls
+    document.addEventListener('keydown', (e) => {
+        if (!gameState.isPlaying) return;
+        
+        switch(e.key) {
+            case 'ArrowLeft':
+            case 'a':
+            case 'A':
+                movePlayer(-1);
+                break;
+            case 'ArrowRight':
+            case 'd':
+            case 'D':
+                movePlayer(1);
+                break;
+            case ' ':
+                playHonk();
+                break;
+        }
+    });
+}
+
+function movePlayer(direction) {
+    if (!gameState.isPlaying) return;
+    
+    const newLane = gameState.playerLane + direction;
+    if (newLane >= 0 && newLane < GAME_CONFIG.LANE_COUNT) {
+        gameState.playerLane = newLane;
+    }
+}
+
+// ================================================================================
+// GAME LOGIC
+// ================================================================================
+function startGame() {
+    document.getElementById('startScreen').classList.add('hidden');
+    document.getElementById('ui').classList.remove('hidden');
+    document.getElementById('gameCanvas').classList.remove('hidden');
+    
+    initCanvas();
+    setupControls();
+    resetGame();
+    gameState.isPlaying = true;
+    gameLoop();
+}
+
+function resetGame() {
+    gameState = {
+        isPlaying: false,
+        obstaclesPassed: 0,
+        currentSpeed: GAME_CONFIG.INITIAL_SPEED,
+        playerLane: 1,
+        obstacles: [],
+        lastObstacleTime: 0,
+        isColliding: false,
+        collisionTime: 0,
+        muted: gameState.muted,
+        teaEasterShown: false,
+        animationId: null
+    };
+    updateUI();
+}
+
+function spawnObstacle() {
+    const now = Date.now();
+    if (now - gameState.lastObstacleTime > 1500 / (gameState.currentSpeed / 2)) {
+        const lane = Math.floor(Math.random() * GAME_CONFIG.LANE_COUNT);
+        gameState.obstacles.push({
+            x: lane * laneWidth + laneWidth / 2,
+            y: -GAME_CONFIG.OBSTACLE_HEIGHT,
+            lane: lane,
+            passed: false
+        });
+        gameState.lastObstacleTime = now;
+    }
+}
+
+function updateObstacles() {
+    const speed = gameState.isColliding ? 
+        gameState.currentSpeed * GAME_CONFIG.COLLISION_SLOWDOWN : 
+        gameState.currentSpeed;
+    
+    for (let i = gameState.obstacles.length - 1; i >= 0; i--) {
+        const obstacle = gameState.obstacles[i];
+        obstacle.y += speed;
+        
+        // Check if obstacle passed the player
+        const playerY = gameHeight - 100;
+        if (!obstacle.passed && obstacle.y > playerY) {
+            if (obstacle.lane === gameState.playerLane) {
+                // Collision!
+                handleCollision();
+            } else {
+                // Successfully avoided
+                obstacle.passed = true;
+                gameState.obstaclesPassed++;
+                playPassSound();
+                updateUI();
+                
+                // Show tea easter egg at obstacle 10
+                if (gameState.obstaclesPassed === 10 && !gameState.teaEasterShown) {
+                    showTeaEaster();
+                }
+                
+                // Increase speed
+                if (gameState.obstaclesPassed % GAME_CONFIG.SPEED_INCREASE_INTERVAL === 0) {
+                    gameState.currentSpeed = Math.min(
+                        gameState.currentSpeed + GAME_CONFIG.SPEED_INCREMENT,
+                        GAME_CONFIG.MAX_SPEED
+                    );
+                }
+                
+                // Check win condition
+                if (gameState.obstaclesPassed >= GAME_CONFIG.OBSTACLES_TO_WIN) {
+                    winGame();
+                }
+            }
+        }
+        
+        // Remove off-screen obstacles
+        if (obstacle.y > gameHeight + GAME_CONFIG.OBSTACLE_HEIGHT) {
+            gameState.obstacles.splice(i, 1);
+        }
+    }
+}
+
+function handleCollision() {
+    if (!gameState.isColliding) {
+        gameState.isColliding = true;
+        gameState.collisionTime = Date.now();
+        playCollisionSound();
+        
+        // Haptic feedback
+        if (navigator.vibrate) {
+            navigator.vibrate(100);
+        }
+        
+        setTimeout(() => {
+            gameState.isColliding = false;
+        }, GAME_CONFIG.COLLISION_DURATION);
+    }
+}
+
+function showTeaEaster() {
+    gameState.teaEasterShown = true;
+    const easter = document.createElement('div');
+    easter.className = 'teaEaster';
+    easter.textContent = '☕ Spill the tea: You\'re amazing! 🍵';
+    easter.style.left = '50%';
+    easter.style.top = '50%';
+    easter.style.transform = 'translate(-50%, -50%)';
+    document.getElementById('gameContainer').appendChild(easter);
+    
+    setTimeout(() => {
+        easter.remove();
+    }, 3000);
+}
+
+// ================================================================================
+// RENDERING
+// ================================================================================
+function draw() {
+    const rect = canvas.getBoundingClientRect();
+    ctx.clearRect(0, 0, rect.width, rect.height);
+    
+    // Draw road
+    ctx.fillStyle = '#1a202c';
+    ctx.fillRect(0, 0, rect.width, rect.height);
+    
+    // Draw lane lines
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([20, 20]);
+    for (let i = 1; i < GAME_CONFIG.LANE_COUNT; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * laneWidth, 0);
+        ctx.lineTo(i * laneWidth, gameHeight);
+        ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    
+    // Draw obstacles
+    gameState.obstacles.forEach(obstacle => {
+        ctx.fillStyle = '#e53e3e';
+        ctx.fillRect(
+            obstacle.x - GAME_CONFIG.OBSTACLE_WIDTH / 2,
+            obstacle.y,
+            GAME_CONFIG.OBSTACLE_WIDTH,
+            GAME_CONFIG.OBSTACLE_HEIGHT
+        );
+        
+        // Add simple car-like details
+        ctx.fillStyle = '#c53030';
+        ctx.fillRect(
+            obstacle.x - GAME_CONFIG.OBSTACLE_WIDTH / 2 + 5,
+            obstacle.y + 5,
+            GAME_CONFIG.OBSTACLE_WIDTH - 10,
+            10
+        );
+    });
+    
+    // Draw player car
+    const playerX = gameState.playerLane * laneWidth + laneWidth / 2;
+    const playerY = gameHeight - 100;
+    
+    // Bump effect when colliding
+    const bumpOffset = gameState.isColliding ? Math.sin(Date.now() * 0.05) * 3 : 0;
+    
+    // Car body
+    ctx.fillStyle = gameState.isColliding ? '#fbb6ce' : '#48bb78';
+    ctx.fillRect(
+        playerX - GAME_CONFIG.CAR_WIDTH / 2 + bumpOffset,
+        playerY,
+        GAME_CONFIG.CAR_WIDTH,
+        GAME_CONFIG.CAR_HEIGHT
+    );
+    
+    // Car windshield
+    ctx.fillStyle = '#68d391';
+    ctx.fillRect(
+        playerX - GAME_CONFIG.CAR_WIDTH / 2 + 5 + bumpOffset,
+        playerY + 5,
+        GAME_CONFIG.CAR_WIDTH - 10,
+        15
+    );
+    
+    // Car wheels
+    ctx.fillStyle = '#2d3748';
+    ctx.fillRect(playerX - GAME_CONFIG.CAR_WIDTH / 2 - 3 + bumpOffset, playerY + 10, 6, 10);
+    ctx.fillRect(playerX + GAME_CONFIG.CAR_WIDTH / 2 - 3 + bumpOffset, playerY + 10, 6, 10);
+    ctx.fillRect(playerX - GAME_CONFIG.CAR_WIDTH / 2 - 3 + bumpOffset, playerY + 30, 6, 10);
+    ctx.fillRect(playerX + GAME_CONFIG.CAR_WIDTH / 2 - 3 + bumpOffset, playerY + 30, 6, 10);
+}
+
+// ================================================================================
+// UI UPDATES
+// ================================================================================
+function updateUI() {
+    document.getElementById('score').textContent = 
+        `Obstacles Cleared: ${gameState.obstaclesPassed} / ${GAME_CONFIG.OBSTACLES_TO_WIN}`;
+    
+    const progress = (gameState.obstaclesPassed / GAME_CONFIG.OBSTACLES_TO_WIN) * 100;
+    document.getElementById('progressFill').style.width = progress + '%';
+    
+    // Update encouragement messages
+    const messages = [
+        `You're doing great, ${GAME_CONFIG.PLAYER_NAME}!`,
+        `Keep going, ${GAME_CONFIG.PLAYER_NAME}!`,
+        `Amazing driving!`,
+        `You've got this!`,
+        `Birthday champion!`,
+        `Smooth steering!`,
+        `Professional driver!`
+    ];
+    
+    if (gameState.obstaclesPassed > 0 && gameState.obstaclesPassed % 3 === 0) {
+        const msg = messages[Math.floor(Math.random() * messages.length)];
+        document.getElementById('encouragement').textContent = msg;
+    }
+}
+
+function toggleMute() {
+    gameState.muted = !gameState.muted;
+    document.getElementById('muteBtn').textContent = gameState.muted ? '🔇' : '🔊';
+}
+
+// ================================================================================
+// GAME LOOP
+// ================================================================================
+function gameLoop() {
+    if (!gameState.isPlaying) return;
+    
+    spawnObstacle();
+    updateObstacles();
+    draw();
+    
+    gameState.animationId = requestAnimationFrame(gameLoop);
+}
+
+// ================================================================================
+// WIN CONDITION AND CERTIFICATE
+// ================================================================================
+function winGame() {
+    gameState.isPlaying = false;
+    cancelAnimationFrame(gameState.animationId);
+    
+    // Play victory sound
+    playSound(523, 0.2);
+    setTimeout(() => playSound(659, 0.2), 100);
+    setTimeout(() => playSound(784, 0.3), 200);
+    
+    // Show certificate
+    setTimeout(() => {
+        document.getElementById('certificateScreen').classList.remove('hidden');
+    }, 500);
+}
+
+function downloadCertificate() {
+    // Create a canvas for the certificate
+    const certCanvas = document.createElement('canvas');
+    const certCtx = certCanvas.getContext('2d');
+    
+    certCanvas.width = 800;
+    certCanvas.height = 600;
+    
+    // Background gradient
+    const gradient = certCtx.createLinearGradient(0, 0, 800, 600);
+    gradient.addColorStop(0, '#667eea');
+    gradient.addColorStop(1, '#764ba2');
+    certCtx.fillStyle = gradient;
+    certCtx.fillRect(0, 0, 800, 600);
+    
+    // White certificate area
+    certCtx.fillStyle = 'white';
+    certCtx.fillRect(50, 50, 700, 500);
+    
+    // Gold border
+    certCtx.strokeStyle = 'gold';
+    certCtx.lineWidth = 5;
+    certCtx.strokeRect(50, 50, 700, 500);
+    
+    // Text
+    certCtx.fillStyle = '#2d3748';
+    certCtx.font = 'bold 32px Arial';
+    certCtx.textAlign = 'center';
+    certCtx.fillText('🏆 Driver\'s Certificate — Officially Passed! 🏆', 400, 120);
+    
+    certCtx.fillStyle = '#e53e3e';
+    certCtx.font = 'bold 40px Arial';
+    certCtx.fillText(CERTIFICATE_MESSAGE.heading, 400, 180);
+    
+    certCtx.fillStyle = '#4a5568';
+    certCtx.font = '20px Arial';
+    const lines = CERTIFICATE_MESSAGE.message.split('. ');
+    lines.forEach((line, i) => {
+        certCtx.fillText(line + (i < lines.length - 1 ? '.' : ''), 400, 240 + i * 30);
+    });
+    
+    certCtx.fillStyle = '#38a169';
+    certCtx.font = 'bold 22px Arial';
+    certCtx.fillText(CERTIFICATE_MESSAGE.encouragement, 400, 340);
+    
+    certCtx.fillStyle = '#764ba2';
+    certCtx.font = 'bold 28px Arial';
+    certCtx.fillText(CERTIFICATE_MESSAGE.persian, 400, 400);
+    
+    certCtx.fillStyle = '#4a5568';
+    certCtx.font = '18px Arial';
+    certCtx.fillText('🍳 ' + CERTIFICATE_MESSAGE.chef, 400, 460);
+    
+    // Emojis
+    certCtx.font = '50px Arial';
+    certCtx.fillText('🎉', 100, 100);
+    certCtx.fillText('🎂', 700, 100);
+    certCtx.fillText('🚗', 100, 500);
+    certCtx.fillText('🎈', 700, 500);
+    
+    // Download
+    const link = document.createElement('a');
+    link.download = `${GAME_CONFIG.PLAYER_NAME}_Birthday_Certificate.png`;
+    link.href = certCanvas.toDataURL();
+    link.click();
+}
+
+function shareCertificate() {
+    const shareData = {
+        title: `${GAME_CONFIG.PLAYER_NAME}'s Birthday Certificate`,
+        text: `${GAME_CONFIG.PLAYER_NAME} completed the Birthday Driving Challenge! 🎂🚗`,
+        url: window.location.href
+    };
+    
+    if (navigator.share) {
+        navigator.share(shareData).catch(() => {
+            alert('Certificate ready to share! You can also download it as an image.');
+        });
+    } else {
+        alert('Share feature not available on this device. Please download the certificate instead!');
+    }
+}
+</script>
+</body>
