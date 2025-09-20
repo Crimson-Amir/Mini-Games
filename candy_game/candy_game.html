@@ -1,0 +1,2265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Survival Shooter Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #1a1a2e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: #2d4a2b;
+        }
+
+        canvas {
+            display: block;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        #ui {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            color: #f0e6d2;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            z-index: 100;
+        }
+
+        #gameOver {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff4444;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            font-size: 24px;
+            text-align: center;
+            display: none;
+            z-index: 200;
+        }
+
+        .health-bar {
+            width: 200px;
+            height: 20px;
+            background: #333;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 5px 0;
+        }
+
+        .health-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff4444, #ff8888);
+            transition: width 0.3s ease;
+        }
+
+        .ammo-counter {
+            color: #ffd700;
+            font-weight: bold;
+        }
+
+        button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 10px 2px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        
+        #cubePuzzleOverlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none;
+            z-index: 150;
+        }
+        
+        #cubePuzzle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            display: none;
+            z-index: 200;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        #cubeContainer {
+            margin: 20px auto;
+            perspective: 1000px;
+            width: 300px;
+            height: 300px;
+        }
+
+        .cube3d {
+            width: 270px;
+            height: 270px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-15deg) rotateY(25deg);
+            margin: 0 auto;
+            transition: transform 0.3s ease;
+        }
+
+        .view-controls {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .view-btn {
+            padding: 8px 16px;
+            font-size: 12px;
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            color: white;
+            border: 2px solid #1565C0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .view-btn:hover {
+            background: linear-gradient(45deg, #1976D2, #2196F3);
+            transform: translateY(-1px);
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 270px;
+            height: 270px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 3px;
+            padding: 5px;
+            box-sizing: border-box;
+            border: 2px solid #333;
+            background-color: #000000; /* Fill the gaps between squares */
+        }
+
+        .cube-square {
+            border: 1px solid #222;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 1px 1px 1px rgba(255,255,255,0.3);
+        }
+
+        .cube-face.front { transform: translateZ(135px); }
+        .cube-face.back { transform: translateZ(-135px) rotateY(180deg); }
+        .cube-face.right { transform: rotateY(90deg) translateZ(135px); }
+        .cube-face.left { transform: rotateY(-90deg) translateZ(135px); }
+        .cube-face.top { transform: rotateX(90deg) translateZ(135px); }
+        .cube-face.bottom { transform: rotateX(-90deg) translateZ(135px); }
+
+        .control-buttons {
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .move-btn {
+            padding: 8px 14px;
+            font-size: 14px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: 2px solid #2e7d32;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 40px;
+        }
+
+        .move-btn:hover {
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .move-btn.prime {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+            border-color: #c62828;
+        }
+
+        .move-btn.prime:hover {
+            background: linear-gradient(45deg, #ee5a52, #ff6b6b);
+        }
+
+        .progress-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+         #gameComplete {
+             position: absolute;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             background: rgba(0, 0, 0, 0.9);
+             padding: 30px;
+             border-radius: 15px;
+             color: #00ff00;
+             text-align: center;
+             display: none;
+             z-index: 200;
+         }
+
+         /* Gift Animation Styles */
+         #giftScene {
+             position: absolute;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+             display: none;
+             z-index: 300;
+             justify-content: center;
+             align-items: center;
+             flex-direction: column;
+         }
+
+         .gift-container {
+             text-align: center;
+             animation: fadeInUp 1s ease-out;
+         }
+
+         .gift-box {
+             width: 200px;
+             height: 200px;
+             background: url('image/gift.png') no-repeat center center;
+             background-size: contain;
+             background-color: #6f63c4;
+             border: 5px solid #ff4757;
+             border-radius: 20px;
+             margin: 0 auto 30px;
+             position: relative;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+             animation: bounce 2s infinite;
+             z-index: 10; /* Ensure gift box is in front of hearts */
+         }
+
+         /* Fallback styling if image doesn't load */
+         .gift-box:before {
+             content: '';
+             position: absolute;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             font-size: 80px;
+             z-index: -1;
+         }
+
+         .gift-box:hover {
+             transform: scale(1.1);
+             box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+         }
+
+         .gift-bow {
+             position: absolute;
+             top: -10px;
+             left: 50%;
+             transform: translateX(-50%);
+             width: 60px;
+             height: 40px;
+             background: linear-gradient(45deg, #ff9ff3, #f368e0);
+             border-radius: 50% 50% 0 0;
+         }
+
+         .gift-bow::before {
+             content: '';
+             position: absolute;
+             top: 20px;
+             left: 50%;
+             transform: translateX(-50%);
+             width: 20px;
+             height: 20px;
+             background: linear-gradient(45deg, #ff9ff3, #f368e0);
+             border-radius: 50%;
+         }
+
+         .gift-text {
+             color: white;
+             font-size: 24px;
+             font-weight: bold;
+             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+             margin-bottom: 20px;
+             animation: pulse 2s infinite;
+         }
+
+         .click-hint {
+             color: #ffd700;
+             font-size: 16px;
+             font-style: italic;
+             animation: blink 1.5s infinite;
+         }
+
+         /* Ring Proposal Styles */
+         #proposalScene {
+             position: absolute;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #fecfef 100%);
+             display: none;
+             z-index: 400;
+             justify-content: center;
+             align-items: center;
+             flex-direction: column;
+         }
+
+         .ring-container {
+             text-align: center;
+             animation: fadeInScale 1.5s ease-out;
+         }
+
+         .ring {
+             width: 150px;
+             height: 150px;
+             border: 8px solid #ffd700;
+             border-radius: 50%;
+             margin: 0 auto 30px;
+             position: relative;
+             background: radial-gradient(circle, #fff 30%, #ffd700 30%);
+             box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+             animation: sparkle 2s infinite;
+         }
+
+         .ring::before {
+             content: '💍';
+             position: absolute;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             font-size: 60px;
+             animation: rotate 3s linear infinite;
+         }
+
+         .proposal-text {
+             color: #8b4513;
+             font-size: 28px;
+             font-weight: bold;
+             text-shadow: 2px 2px 4px rgba(255,255,255,0.8);
+             margin-bottom: 20px;
+             animation: typewriter 3s steps(40) 1s both;
+             overflow: hidden;
+             white-space: nowrap;
+             border-right: 3px solid #8b4513;
+         }
+
+         .hearts {
+             position: absolute;
+             width: 100%;
+             height: 100%;
+             pointer-events: none;
+         }
+
+         .heart {
+             position: absolute;
+             color: #ff69b4;
+             font-size: 20px;
+             animation: floatUp 3s infinite;
+         }
+
+         /* Animations */
+         @keyframes fadeInUp {
+             from {
+                 opacity: 0;
+                 transform: translateY(50px);
+             }
+             to {
+                 opacity: 1;
+                 transform: translateY(0);
+             }
+         }
+
+         @keyframes fadeInScale {
+             from {
+                 opacity: 0;
+                 transform: scale(0.5);
+             }
+             to {
+                 opacity: 1;
+                 transform: scale(1);
+             }
+         }
+
+         @keyframes bounce {
+             0%, 20%, 50%, 80%, 100% {
+                 transform: translateY(0);
+             }
+             40% {
+                 transform: translateY(-20px);
+             }
+             60% {
+                 transform: translateY(-10px);
+             }
+         }
+
+         @keyframes pulse {
+             0% {
+                 transform: scale(1);
+             }
+             50% {
+                 transform: scale(1.05);
+             }
+             100% {
+                 transform: scale(1);
+             }
+         }
+
+         @keyframes blink {
+             0%, 50% {
+                 opacity: 1;
+             }
+             51%, 100% {
+                 opacity: 0.3;
+             }
+         }
+
+         @keyframes sparkle {
+             0%, 100% {
+                 box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+             }
+             50% {
+                 box-shadow: 0 0 50px rgba(255, 215, 0, 1), 0 0 100px rgba(255, 215, 0, 0.5);
+             }
+         }
+
+         @keyframes rotate {
+             from {
+                 transform: translate(-50%, -50%) rotate(0deg);
+             }
+             to {
+                 transform: translate(-50%, -50%) rotate(360deg);
+             }
+         }
+
+         @keyframes typewriter {
+             from {
+                 width: 0;
+             }
+             to {
+                 width: 100%;
+             }
+         }
+
+         /* Heart Zoom Scene */
+         #heartZoomScene {
+             position: absolute;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background: linear-gradient(135deg, #ff69b4 0%, #ff1493 50%, #dc143c 100%);
+             display: none;
+             z-index: 500;
+             justify-content: center;
+             align-items: center;
+             flex-direction: column;
+         }
+
+         .big-heart {
+             font-size: 50px;
+             animation: heartZoomIn 3s ease-out forwards;
+             transform: scale(0);
+             z-index: 5; /* Behind other main elements */
+         }
+
+         .love-message {
+             color: white;
+             font-size: 48px;
+             font-weight: bold;
+             text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+             text-align: center;
+             opacity: 0;
+             animation: fadeInMessage 1s ease-in 3.5s forwards;
+             margin-top: 30px;
+             z-index: 10; /* In front of the big heart */
+             position: relative;
+         }
+
+         .final-buttons {
+             margin-top: 40px;
+             opacity: 0;
+             animation: fadeInMessage 1s ease-in 5s forwards;
+             z-index: 10; /* In front of the big heart */
+             position: relative;
+         }
+
+         @keyframes heartZoomIn {
+             0% {
+                 transform: scale(0) rotate(0deg);
+                 opacity: 0;
+             }
+             50% {
+                 transform: scale(8) rotate(180deg);
+                 opacity: 1;
+             }
+             100% {
+                 transform: scale(6) rotate(360deg);
+                 opacity: 1;
+             }
+         }
+
+         @keyframes fadeInMessage {
+             from {
+                 opacity: 0;
+                 transform: translateY(20px);
+             }
+             to {
+                 opacity: 1;
+                 transform: translateY(0);
+             }
+         }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas"></canvas>
+        <div id="ui">
+            <div>HP: <span id="hpText">100</span></div>
+            <div class="health-bar">
+                <div class="health-fill" id="healthBar" style="width: 100%"></div>
+            </div>
+            <div class="ammo-counter">Bullets: <span id="bulletCount">30</span></div>
+            <div>Gun: <span id="currentGun">Basic Candy Gun</span></div>
+            <div style="color: #ffd700; margin-top: 5px;">Cubes: <span id="cubeCount">0/4</span></div>
+            <div style="margin-top: 10px;">
+                <div>WASD - Move</div>
+                <div>Mouse - Aim & Shoot</div>
+                <div>R - Reload (when near bullets)</div>
+            </div>
+        </div>
+        <div id="gameOver">
+            <h2>GAME OVER</h2>
+            <p>You have been defeated!</p>
+            <button onclick="restartGame()">Try Again</button>
+        </div>
+        
+        <div id="cubePuzzleOverlay"></div>
+        
+        <div id="cubePuzzle">
+            <h2>Solve the Rubik's Cube!</h2>
+            <div id="cubeTimer" style="font-size: 18px; margin: 10px 0;">Time: <span id="timeLeft">3:00</span></div>
+            <div id="cubeContainer">
+                <div class="cube3d" id="rubiksCube"></div>
+            </div>
+            <div class="view-controls">
+                <button class="view-btn" onclick="rotateCubeView('left')">← Left</button>
+                <button class="view-btn" onclick="rotateCubeView('right')">Right →</button>
+                <button class="view-btn" onclick="rotateCubeView('up')">↑ Up</button>
+                <button class="view-btn" onclick="rotateCubeView('down')">↓ Down</button>
+                <button class="view-btn" onclick="rotateCubeView('reset')">Reset View</button>
+                <button class="view-btn" onclick="solveCubeDebug()" style="background: linear-gradient(45deg, #ff9800, #f57c00); border-color: #ef6c00;">🔧 DEBUG SOLVE</button>
+            </div>
+            <div class="control-buttons" id="controlButtons"></div>
+            <div class="progress-info">
+                <div>Progress: <span id="cubeProgress">0</span>/6 faces solved</div>
+                <div style="font-size: 12px; color: #ccc; margin-top: 5px;">
+                    F=Front, B=Back, R=Right, L=Left, U=Up, D=Down<br>
+                    ' = Counter-clockwise rotation
+                </div>
+            </div>
+        </div>
+        
+         <div id="gameComplete">
+             <h2>CONGRATULATIONS!</h2>
+             <p>You have completed the game!</p>
+             <button onclick="restartGame()">Play Again</button>
+         </div>
+
+         <!-- Gift Scene -->
+         <div id="giftScene">
+             <div class="gift-container">
+                 <div class="gift-text">You won! Here is your award</div>
+                 <div class="gift-box" onclick="openGift()">
+                 </div>
+                 <div class="click-hint">Click the gift to open it!</div>
+             </div>
+         </div>
+
+         <!-- Proposal Scene -->
+         <div id="proposalScene">
+             <div class="hearts" id="heartsContainer"></div>
+             <div class="ring-container">
+                 <div class="ring"></div>
+                 <div class="proposal-text">Will you be my girlfriend?</div>
+                 <div style="margin-top: 30px;">
+                     <button onclick="acceptProposal()" style="background: #ff69b4; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 25px; margin: 10px; cursor: pointer; box-shadow: 0 5px 15px rgba(255,105,180,0.4);">Yes! 💕</button>
+                     <button onclick="restartGame()" style="background: #666; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 25px; margin: 10px; cursor: pointer;">Maybe Later</button>
+                 </div>
+             </div>
+         </div>
+
+         <!-- Heart Zoom Scene -->
+         <div id="heartZoomScene">
+             <div class="big-heart">💖</div>
+             <div class="love-message">I LOVE YOU SO MUCH</div>
+             <div class="final-buttons">
+                 <button onclick="restartGame()" style="background: #ff69b4; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 25px; cursor: pointer; box-shadow: 0 5px 15px rgba(255,105,180,0.4);">Play Again 💕</button>
+             </div>
+         </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Make game fullscreen
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        // Game settings
+        const TILE_SIZE = 32;
+        const WORLD_WIDTH = 3000;
+        const WORLD_HEIGHT = 3000;
+        
+        // Game state
+        let gameState = 'playing'; // 'playing', 'gameOver', 'cubePuzzle', 'completed'
+        
+        // Sprite assets (placeholders) - RESTORED ORIGINAL SYSTEM
+        const sprites = {
+            player: new Image(),
+            guns: {
+                basic: new Image(),
+                triple: new Image(),
+                rapid: new Image()
+            },
+            enemies: {
+                pinkMonster: new Image(),
+                rozi: new Image(),
+                nigel: new Image(),
+                manager: new Image(),
+                ghost: new Image(),
+                witch: new Image(),
+                blood_monster: new Image()
+            },
+            pickups: {
+                health: new Image(),
+                bullets: new Image(),
+                gun_basic: new Image(),
+                gun_triple: new Image(),
+                gun_rapid: new Image()
+            }
+        };
+        
+        // Assign sources (these files should exist; names can be adjusted to your assets)
+        sprites.player.src = 'image/player.png';
+        sprites.guns.basic.src = 'image/gun_basic.png';
+        sprites.guns.triple.src = 'image/gun_triple.png';
+        sprites.guns.rapid.src = 'image/gun_rapid.png';
+        sprites.enemies.pinkMonster.src = 'image/enemy_pinkMonster.png';
+        sprites.enemies.rozi.src = 'image/enemy_rozi.png';
+        sprites.enemies.nigel.src = 'image/enemy_nigel.png';
+        sprites.enemies.manager.src = 'image/enemy_manager.png';
+        sprites.enemies.ghost.src = 'image/enemy_ghost.png';
+        sprites.enemies.witch.src = 'image/enemy_witch.png';
+        sprites.enemies.blood_monster.src = 'image/enemy_blood_monster.png';
+        sprites.pickups.health.src = 'image/pickup_health.png';
+        sprites.pickups.bullets.src = 'image/pickup_bullets.png';
+        sprites.pickups.gun_basic.src = 'image/gun_basic_pickup.png';
+        sprites.pickups.gun_triple.src = 'image/gun_triple_pickup.png';
+        sprites.pickups.gun_rapid.src = 'image/gun_rapid_pickup.png';
+        sprites.boss = new Image();
+        sprites.boss.src = 'image/boss.png';
+
+        function drawSpriteCentered(img, x, y, angle, width, height, alpha = 1) {
+            if (!img) return;
+            const w = width || img.width || 32;
+            const h = height || img.height || 32;
+            const screenX = x - camera.x;
+            const screenY = y - camera.y;
+            ctx.save();
+            ctx.translate(screenX, screenY);
+            if (angle) ctx.rotate(angle);
+            const prevAlpha = ctx.globalAlpha;
+            ctx.globalAlpha = prevAlpha * alpha;
+            
+            // Draw fallback if image not loaded
+            if (img.complete && img.naturalHeight !== 0) {
+                ctx.drawImage(img, -w / 2, -h / 2, w, h);
+            } else {
+                // Fallback colored rectangle
+                ctx.fillStyle = '#ff69b4';
+                ctx.fillRect(-w / 2, -h / 2, w, h);
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-w / 2, -h / 2, w, h);
+            }
+            
+            ctx.globalAlpha = prevAlpha;
+            ctx.restore();
+        }
+
+        // Mouse position
+        const mouse = {
+            x: 0,
+            y: 0,
+            worldX: 0,
+            worldY: 0,
+            isPressed: false
+        };
+        
+        // Camera
+        const camera = {
+            x: 0,
+            y: 0,
+            width: canvas.width,
+            height: canvas.height
+        };
+        
+        // Player object
+        const player = {
+            x: WORLD_WIDTH / 2,
+            y: WORLD_HEIGHT / 2,
+            width: 32,
+            height: 32,
+            speed: 4,
+            hp: 100,
+            maxHp: 100,
+            bullets: 30,
+            maxBullets: 100,
+            currentGun: 'basic',
+            aimAngle: 0,
+            lastShotTime: 0,
+            shootCooldown: 200,
+            isMoving: false,
+            vx: 0,
+            vy: 0
+        };
+
+        // Guns data
+        const guns = {
+            basic: {
+                name: 'Basic Candy Gun',
+                damage: 10,
+                cooldown: 500,
+                bulletsPerShot: 1,
+                spread: 0,
+                color: '#ff69b4'
+            },
+            triple: {
+                name: 'Triple Shot',
+                damage: 8,
+                cooldown: 300,
+                bulletsPerShot: 3,
+                spread: 0.3,
+                color: '#ff4444'
+            },
+            rapid: {
+                name: 'Rapid Fire',
+                damage: 6,
+                cooldown: 100,
+                bulletsPerShot: 1,
+                spread: 0.1,
+                color: '#44ff44'
+            }
+        };
+        
+        // Game arrays
+        const bullets = [];
+        const enemies = [];
+        const pickups = [];
+        const particles = [];
+        const enemyBullets = [];
+        const cubeParts = [];
+        
+        // Rubik's cube system
+        const cubeSystem = {
+            totalParts: 54,
+            collectedParts: 0,
+            colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff8800', '#ffffff'],
+            dropChance: 0.3
+        };
+        
+        // Boss system
+        const boss = {
+            active: false,
+            x: 0,
+            y: 0,
+            hp: 10000,
+            maxHp: 10000,
+            damage: 50,
+            size: 250,
+            speed: 1.5,
+            angle: 0,
+            lastAttackTime: 0,
+            attackCooldown: 2000
+        };
+        
+        // Spawn timers
+        let enemySpawnTimer = 0;
+        let pickupSpawnTimer = 0;
+        
+        // Enemy types
+        const enemyTypes = {
+            pinkMonster: {
+                name: 'Pink Monster',
+                hp: 30,
+                damage: 3,
+                speed: 1.5,
+                size: 30,
+                color: '#ff69b4',
+                type: 'melee',
+                spawnWeight: 40
+            },
+            rozi: {
+                name: 'Rozi',
+                hp: 50,
+                damage: 7,
+                speed: 1.2,
+                size: 40,
+                color: '#8b4513',
+                type: 'melee',
+                spawnWeight: 25
+            },
+            nigel: {
+                name: 'Nigel',
+                hp: 100,
+                damage: 15,
+                speed: 0.8,
+                size: 60,
+                color: '#654321',
+                type: 'hybrid',
+                spawnWeight: 15
+            },
+            manager: {
+                name: 'College Manager',
+                hp: 50,
+                damage: 15,
+                speed: 1.0,
+                size: 50,
+                color: '#2f4f4f',
+                type: 'ranged',
+                spawnWeight: 20
+            },
+            ghost: {
+                name: 'Ghost',
+                hp: 70,
+                damage: 20,
+                speed: 2.0,
+                size: 60,
+                color: 'rgba(200, 200, 255, 0.7)',
+                type: 'melee',
+                spawnWeight: 30
+            },
+            witch: {
+                name: 'Witch Girl',
+                hp: 20,
+                damage: 7,
+                speed: 1.8,
+                size: 35,
+                color: '#800080',
+                type: 'melee',
+                spawnWeight: 35
+            },
+            blood_monster: {
+                name: 'Blood Monster',
+                hp: 150,
+                damage: 30,
+                speed: 1.2,
+                size: 100,
+                color: '#ff0000',
+                type: 'melee',
+                spawnWeight: 10
+            }
+        };
+
+        // Input handling
+        const keys = {};
+        
+        window.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+        
+        // Mouse handling
+        canvas.addEventListener('mousemove', (e) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+            mouse.worldX = mouse.x + camera.x;
+            mouse.worldY = mouse.y + camera.y;
+            
+            // Calculate smooth aim angle
+            const dx = mouse.worldX - player.x;
+            const dy = mouse.worldY - player.y;
+            const targetAngle = Math.atan2(dy, dx);
+            
+            // Smooth rotation to prevent jerky movement
+            let angleDiff = targetAngle - player.aimAngle;
+            
+            // Normalize angle difference to [-π, π]
+            while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+            while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+            
+            // Apply smooth rotation
+            player.aimAngle += angleDiff * 0.2;
+        });
+        
+        canvas.addEventListener('mousedown', (e) => {
+            mouse.isPressed = true;
+        });
+        
+        canvas.addEventListener('mouseup', (e) => {
+            mouse.isPressed = false;
+        });
+
+        // Shooting system
+        function shootBullet() {
+            if (gameState !== 'playing') return;
+
+            const now = Date.now();
+            const gunData = guns[player.currentGun];
+
+            if (now - player.lastShotTime < gunData.cooldown) return;
+            if (player.bullets <= 0) return;
+
+            for (let i = 0; i < gunData.bulletsPerShot; i++) {
+                const spread = (gunData.bulletsPerShot > 1)
+                    ? (i - (gunData.bulletsPerShot - 1) / 2) * gunData.spread
+                    : 0;
+
+                const angle = player.aimAngle + spread;
+                const bulletSpeed = 8;
+
+                const bullet = {
+                    x: player.x + Math.cos(player.aimAngle) * 25,
+                    y: player.y + Math.sin(player.aimAngle) * 25,
+                    vx: Math.cos(angle) * bulletSpeed,
+                    vy: Math.sin(angle) * bulletSpeed,
+                    damage: gunData.damage,
+                    color: gunData.color,
+                    size: 4,
+                    lifetime: 150
+                };
+
+                bullets.push(bullet);
+            }
+
+            player.bullets--;
+            player.lastShotTime = now;
+            updateUI();
+        }
+        
+        // Enemy spawning
+        function spawnEnemy() {
+            const totalWeight = Object.values(enemyTypes).reduce((sum, type) => sum + type.spawnWeight, 0);
+            let random = Math.random() * totalWeight;
+            
+            let selectedType = 'pinkMonster';
+            for (const [key, type] of Object.entries(enemyTypes)) {
+                random -= type.spawnWeight;
+                if (random <= 0) {
+                    selectedType = key;
+                    break;
+                }
+            }
+            
+            const typeData = enemyTypes[selectedType];
+            
+            // Spawn at edge of screen
+            const side = Math.floor(Math.random() * 4);
+            let x, y;
+            
+            switch(side) {
+                case 0: // top
+                    x = camera.x + Math.random() * camera.width;
+                    y = camera.y - 50;
+                    break;
+                case 1: // right
+                    x = camera.x + camera.width + 50;
+                    y = camera.y + Math.random() * camera.height;
+                    break;
+                case 2: // bottom
+                    x = camera.x + Math.random() * camera.width;
+                    y = camera.y + camera.height + 50;
+                    break;
+                case 3: // left
+                    x = camera.x - 50;
+                    y = camera.y + Math.random() * camera.height;
+                    break;
+            }
+            
+            const enemy = {
+                x: x,
+                y: y,
+                type: selectedType,
+                hp: typeData.hp,
+                maxHp: typeData.hp,
+                damage: typeData.damage,
+                speed: typeData.speed,
+                size: typeData.size,
+                color: typeData.color,
+                attackCooldown: 0,
+                lastAttackTime: 0,
+                angle: 0
+            };
+            
+            enemies.push(enemy);
+        }
+        
+        // Spawn cube part
+        function spawnCubePart(x, y) {
+            const color = cubeSystem.colors[Math.floor(Math.random() * cubeSystem.colors.length)];
+            const cubePart = {
+                x: x,
+                y: y,
+                color: color,
+                collected: false,
+                bobOffset: Math.random() * Math.PI * 2,
+                size: 12
+            };
+            cubeParts.push(cubePart);
+        }
+        
+        // Spawn pickups
+        function spawnPickup() {
+            const type = Math.random() < 0.3 ? 'health' : Math.random() < 0.6 ? 'bullets' : 'gun';
+            
+            const pickup = {
+                x: camera.x + Math.random() * camera.width,
+                y: camera.y + Math.random() * camera.height,
+                type: type,
+                collected: false,
+                bobOffset: Math.random() * Math.PI * 2
+            };
+            
+            if (type === 'gun') {
+                const gunKeys = Object.keys(guns);
+                pickup.gunType = gunKeys[Math.floor(Math.random() * gunKeys.length)];
+            }
+            
+            pickups.push(pickup);
+        }
+        
+        // Update functions
+        function updatePlayer() {
+            if (gameState !== 'playing') return;
+            
+            let dx = 0;
+            let dy = 0;
+            player.isMoving = false;
+            
+            // Movement
+            if (keys['w'] || keys['arrowup']) {
+                dy = -player.speed;
+                player.isMoving = true;
+            }
+            if (keys['s'] || keys['arrowdown']) {
+                dy = player.speed;
+                player.isMoving = true;
+            }
+            if (keys['a'] || keys['arrowleft']) {
+                dx = -player.speed;
+                player.isMoving = true;
+            }
+            if (keys['d'] || keys['arrowright']) {
+                dx = player.speed;
+                player.isMoving = true;
+            }
+            
+            // Normalize diagonal movement
+            if (dx !== 0 && dy !== 0) {
+                dx *= 0.707;
+                dy *= 0.707;
+            }
+            
+            // Update position with world bounds
+            player.x = Math.max(player.width/2, 
+                       Math.min(player.x + dx, WORLD_WIDTH - player.width/2));
+            player.y = Math.max(player.height/2, 
+                       Math.min(player.y + dy, WORLD_HEIGHT - player.height/2));
+            
+            // Shooting
+            if (mouse.isPressed) {
+                shootBullet();
+            }
+            
+            // Check for death
+            if (player.hp <= 0) {
+                gameState = 'gameOver';
+                document.getElementById('gameOver').style.display = 'block';
+            }
+        }
+        
+        function updateBullets() {
+            // Player bullets
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const bullet = bullets[i];
+                bullet.x += bullet.vx;
+                bullet.y += bullet.vy;
+                bullet.lifetime--;
+                
+                if (bullet.lifetime <= 0 || 
+                    bullet.x < 0 || bullet.x > WORLD_WIDTH || 
+                    bullet.y < 0 || bullet.y > WORLD_HEIGHT) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+                
+                // Check enemy collision
+                for (let j = enemies.length - 1; j >= 0; j--) {
+                    const enemy = enemies[j];
+                    const dist = Math.hypot(bullet.x - enemy.x, bullet.y - enemy.y);
+                    
+                    if (dist < enemy.size/2 + bullet.size) {
+                        enemy.hp -= bullet.damage;
+                        bullets.splice(i, 1);
+                        
+                        // Create hit particles
+                        createParticles(enemy.x, enemy.y, '#ff4444', 5);
+                        
+                        if (enemy.hp <= 0) {
+                            // Chance to drop cube part
+                            if (Math.random() < cubeSystem.dropChance && cubeSystem.collectedParts < cubeSystem.totalParts) {
+                                spawnCubePart(enemy.x, enemy.y);
+                            }
+                            enemies.splice(j, 1);
+                        }
+                        break;
+                    }
+                }
+                
+                // Check boss collision
+                if (boss.active) {
+                    const dist = Math.hypot(bullet.x - boss.x, bullet.y - boss.y);
+                    if (dist < boss.size/2 + bullet.size) {
+                        boss.hp -= bullet.damage;
+                        bullets.splice(i, 1);
+                        createParticles(boss.x, boss.y, '#ff4444', 8);
+                        break;
+                    }
+                }
+            }
+            
+            // Enemy bullets
+            for (let i = enemyBullets.length - 1; i >= 0; i--) {
+                const bullet = enemyBullets[i];
+                bullet.x += bullet.vx;
+                bullet.y += bullet.vy;
+                bullet.lifetime--;
+                
+                if (bullet.lifetime <= 0) {
+                    enemyBullets.splice(i, 1);
+                    continue;
+                }
+                
+                // Check player collision
+                const dist = Math.hypot(bullet.x - player.x, bullet.y - player.y);
+                if (dist < player.width/2 + bullet.size) {
+                    player.hp -= bullet.damage;
+                    enemyBullets.splice(i, 1);
+                    createParticles(player.x, player.y, '#ff0000', 3);
+                    updateUI();
+                }
+            }
+        }
+        
+        function updateEnemies() {
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const enemy = enemies[i];
+                const typeData = enemyTypes[enemy.type];
+                
+                // Move towards player
+                const dx = player.x - enemy.x;
+                const dy = player.y - enemy.y;
+                const dist = Math.hypot(dx, dy);
+                
+                if (dist > 0) {
+                    enemy.angle = Math.atan2(dy, dx);
+                    enemy.x += Math.cos(enemy.angle) * enemy.speed;
+                    enemy.y += Math.sin(enemy.angle) * enemy.speed;
+                }
+                
+                // Attack logic
+                const now = Date.now();
+                if (typeData.type === 'melee' && dist < enemy.size) {
+                    if (now - enemy.lastAttackTime > 1000) {
+                        player.hp -= enemy.damage;
+                        enemy.lastAttackTime = now;
+                        createParticles(player.x, player.y, '#ff0000', 8);
+                        updateUI();
+                    }
+                } else if (typeData.type === 'ranged' && dist < 300 && dist > 100) {
+                    if (now - enemy.lastAttackTime > 2000) {
+                        // Shoot at player
+                        const bulletSpeed = 4;
+                        const enemyBullet = {
+                            x: enemy.x,
+                            y: enemy.y,
+                            vx: Math.cos(enemy.angle) * bulletSpeed,
+                            vy: Math.sin(enemy.angle) * bulletSpeed,
+                            damage: enemy.damage,
+                            size: 6,
+                            lifetime: 100,
+                            color: '#8b4513'
+                        };
+                        enemyBullets.push(enemyBullet);
+                        enemy.lastAttackTime = now;
+                    }
+                } else if (typeData.type === 'hybrid') {
+                    if (dist < enemy.size && now - enemy.lastAttackTime > 1500) {
+                        player.hp -= enemy.damage;
+                        enemy.lastAttackTime = now;
+                        createParticles(player.x, player.y, '#ff0000', 8);
+                        updateUI();
+                    } else if (dist < 200 && dist > 60 && now - enemy.lastAttackTime > 3000) {
+                        // Ranged attack
+                        const bulletSpeed = 3;
+                        const enemyBullet = {
+                            x: enemy.x,
+                            y: enemy.y,
+                            vx: Math.cos(enemy.angle) * bulletSpeed,
+                            vy: Math.sin(enemy.angle) * bulletSpeed,
+                            damage: 10,
+                            size: 4,
+                            lifetime: 80,
+                            color: '#654321'
+                        };
+                        enemyBullets.push(enemyBullet);
+                        enemy.lastAttackTime = now;
+                    }
+                }
+            }
+        }
+        
+        function updatePickups() {
+            for (let i = pickups.length - 1; i >= 0; i--) {
+                const pickup = pickups[i];
+                
+                // Bob animation
+                pickup.bobOffset += 0.1;
+                
+                // Check collision with player
+                const dist = Math.hypot(pickup.x - player.x, pickup.y - player.y);
+                if (dist < 25) {
+                    if (pickup.type === 'health') {
+                        player.hp = Math.min(player.maxHp, player.hp + 50);
+                        createParticles(pickup.x, pickup.y, '#00ff00', 10);
+                    } else if (pickup.type === 'bullets') {
+                        player.bullets = Math.min(player.maxBullets, player.bullets + 30);
+                        createParticles(pickup.x, pickup.y, '#ffff00', 8);
+                    } else if (pickup.type === 'gun') {
+                        player.currentGun = pickup.gunType;
+                        createParticles(pickup.x, pickup.y, '#ff00ff', 12);
+                    }
+                    
+                    pickups.splice(i, 1);
+                    updateUI();
+                }
+            }
+        }
+        
+        function updateCubeParts() {
+            for (let i = cubeParts.length - 1; i >= 0; i--) {
+                const cubePart = cubeParts[i];
+                
+                // Bob animation
+                cubePart.bobOffset += 0.1;
+                
+                // Check collision with player
+                const dist = Math.hypot(cubePart.x - player.x, cubePart.y - player.y);
+                if (dist < 20) {
+                    cubeSystem.collectedParts += 3;
+                    createParticles(cubePart.x, cubePart.y, cubePart.color, 8);
+                    cubeParts.splice(i, 1);
+                    updateUI();
+                    
+                    // Check if all cubes collected
+                    if (cubeSystem.collectedParts >= cubeSystem.totalParts) {
+                        spawnBoss();
+                    }
+                }
+            }
+        }
+        
+        function spawnBoss() {
+            boss.active = true;
+            boss.hp = boss.maxHp;
+            
+            // Spawn boss from edge of screen like other enemies
+            const side = Math.floor(Math.random() * 4);
+            let x, y;
+            
+            switch(side) {
+                case 0: // top
+                    x = camera.x + Math.random() * camera.width;
+                    y = camera.y - 100;
+                    break;
+                case 1: // right
+                    x = camera.x + camera.width + 100;
+                    y = camera.y + Math.random() * camera.height;
+                    break;
+                case 2: // bottom
+                    x = camera.x + Math.random() * camera.width;
+                    y = camera.y + camera.height + 100;
+                    break;
+                case 3: // left
+                    x = camera.x - 100;
+                    y = camera.y + Math.random() * camera.height;
+                    break;
+            }
+            
+            boss.x = x;
+            boss.y = y;
+            
+            // Calculate angle to face player
+            const dx = player.x - boss.x;
+            const dy = player.y - boss.y;
+            boss.angle = Math.atan2(dy, dx);
+        }
+        
+        function updateBoss() {
+            if (!boss.active) return;
+            
+            // Move towards player
+            const dx = player.x - boss.x;
+            const dy = player.y - boss.y;
+            const dist = Math.hypot(dx, dy);
+            
+            if (dist > 0) {
+                boss.angle = Math.atan2(dy, dx);
+                boss.x += Math.cos(boss.angle) * boss.speed;
+                boss.y += Math.sin(boss.angle) * boss.speed;
+            }
+            
+            // Attack player
+            const now = Date.now();
+            if (dist < boss.size && now - boss.lastAttackTime > boss.attackCooldown) {
+                player.hp -= boss.damage;
+                boss.lastAttackTime = now;
+                createParticles(player.x, player.y, '#ff0000', 15);
+                updateUI();
+            }
+            
+            // Check if boss is dead
+            if (boss.hp <= 0) {
+                boss.active = false;
+                createParticles(boss.x, boss.y, '#ffd700', 20);
+                startCubePuzzle();
+            }
+        }
+        
+        function updateCamera() {
+            camera.x = player.x - camera.width / 2;
+            camera.y = player.y - camera.height / 2;
+            
+            // Keep camera within world bounds
+            camera.x = Math.max(0, Math.min(camera.x, WORLD_WIDTH - camera.width));
+            camera.y = Math.max(0, Math.min(camera.y, WORLD_HEIGHT - camera.height));
+        }
+        
+        function createParticles(x, y, color, count) {
+            for (let i = 0; i < count; i++) {
+                const particle = {
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    color: color,
+                    size: Math.random() * 4 + 2,
+                    lifetime: 30,
+                    maxLifetime: 30
+                };
+                particles.push(particle);
+            }
+        }
+        
+        function updateParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const particle = particles[i];
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                particle.vx *= 0.95;
+                particle.vy *= 0.95;
+                particle.lifetime--;
+                
+                if (particle.lifetime <= 0) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+        
+        // FIXED RUBIK'S CUBE IMPLEMENTATION
+        let rubiksCube = {
+            timeLeft: 180,
+            timer: null,
+            solved: false,
+            faces: {
+                U: [0,0,0,0,0,0,0,0,0], // Up (White)
+                F: [1,1,1,1,1,1,1,1,1], // Front (Red)  
+                R: [2,2,2,2,2,2,2,2,2], // Right (Blue)
+                B: [3,3,3,3,3,3,3,3,3], // Back (Orange)
+                L: [4,4,4,4,4,4,4,4,4], // Left (Green)
+                D: [5,5,5,5,5,5,5,5,5]  // Down (Yellow)
+            },
+            viewRotation: { x: -15, y: 25 } // Track current view rotation
+        };
+
+        // View control function
+        function rotateCubeView(direction) {
+            const cube = document.getElementById('rubiksCube');
+            const step = 45; // degrees to rotate per click
+            
+            switch(direction) {
+                case 'left':
+                    rubiksCube.viewRotation.y -= step;
+                    break;
+                case 'right':
+                    rubiksCube.viewRotation.y += step;
+                    break;
+                case 'up':
+                    rubiksCube.viewRotation.x += step;
+                    break;
+                case 'down':
+                    rubiksCube.viewRotation.x -= step;
+                    break;
+                case 'reset':
+                    rubiksCube.viewRotation.x = -15;
+                    rubiksCube.viewRotation.y = 25;
+                    break;
+            }
+            
+            // Apply the rotation
+            cube.style.transform = `rotateX(${rubiksCube.viewRotation.x}deg) rotateY(${rubiksCube.viewRotation.y}deg)`;
+        }
+
+        // Debug function to instantly solve the cube
+        function solveCubeDebug() {
+            // Reset cube to solved state
+            rubiksCube.faces = {
+                U: [0,0,0,0,0,0,0,0,0], // Up (White)
+                F: [1,1,1,1,1,1,1,1,1], // Front (Red)  
+                R: [2,2,2,2,2,2,2,2,2], // Right (Blue)
+                B: [3,3,3,3,3,3,3,3,3], // Back (Orange)
+                L: [4,4,4,4,4,4,4,4,4], // Left (Green)
+                D: [5,5,5,5,5,5,5,5,5]  // Down (Yellow)
+            };
+            
+            // Update the display and progress
+            updateCubeDisplay();
+            updateCubeProgress();
+            
+            // Show debug message
+            console.log('Debug: Cube solved!');
+            
+            // Check if puzzle is completed (it should be now)
+            if (isCubeSolved()) {
+                setTimeout(() => {
+                    endCubePuzzle(true);
+                }, 500); // Small delay to show the solved cube
+            }
+        }
+
+        const colorMap = {
+            0: '#FFFFFF', // White
+            1: '#FF0000', // Red
+            2: '#0000FF', // Blue
+            3: '#FFA500', // Orange
+            4: '#00FF00', // Green
+            5: '#FFFF00'  // Yellow
+        };
+
+        function startCubePuzzle() {
+            gameState = 'cubePuzzle';
+            rubiksCube.timeLeft = 180;
+            rubiksCube.solved = false;
+            
+            // Reset cube to solved state first
+            rubiksCube.faces = {
+                U: [0,0,0,0,0,0,0,0,0], // Up (White)
+                F: [1,1,1,1,1,1,1,1,1], // Front (Red)  
+                R: [2,2,2,2,2,2,2,2,2], // Right (Blue)
+                B: [3,3,3,3,3,3,3,3,3], // Back (Orange)
+                L: [4,4,4,4,4,4,4,4,4], // Left (Green)
+                D: [5,5,5,5,5,5,5,5,5]  // Down (Yellow)
+            };
+            
+            // Reset view rotation
+            rubiksCube.viewRotation = { x: -15, y: 25 };
+            
+            // Scramble the cube
+            scrambleCube();
+            
+            // Show puzzle UI
+            document.getElementById('cubePuzzleOverlay').style.display = 'block';
+            document.getElementById('cubePuzzle').style.display = 'block';
+            
+            // Create cube display and controls
+            createCubeDisplay();
+            createControlButtons();
+            updateCubeProgress();
+            
+            // Start timer
+            rubiksCube.timer = setInterval(() => {
+                rubiksCube.timeLeft--;
+                const minutes = Math.floor(rubiksCube.timeLeft / 60);
+                const seconds = rubiksCube.timeLeft % 60;
+                document.getElementById('timeLeft').textContent = 
+                    minutes + ':' + seconds.toString().padStart(2, '0');
+                
+                if (rubiksCube.timeLeft <= 0) {
+                    endCubePuzzle(false);
+                } else if (isCubeSolved()) {
+                    endCubePuzzle(true);
+                }
+            }, 1000);
+        }
+
+        function scrambleCube() {
+            const moves = ['U', 'F', 'R', 'B', 'L', 'D', "U'", "F'", "R'", "B'", "L'", "D'"];
+            const scrambleLength = 15;
+            
+            for (let i = 0; i < scrambleLength; i++) {
+                const move = moves[Math.floor(Math.random() * moves.length)];
+                performCubeMove(move, false);
+            }
+        }
+
+        function createCubeDisplay() {
+            const cubeContainer = document.getElementById('rubiksCube');
+            cubeContainer.innerHTML = '';
+            
+            const faceNames = ['U', 'F', 'R', 'B', 'L', 'D'];
+            const faceClasses = ['top', 'front', 'right', 'back', 'left', 'bottom'];
+            
+            faceNames.forEach((faceName, index) => {
+                const faceDiv = document.createElement('div');
+                faceDiv.className = `cube-face ${faceClasses[index]}`;
+                faceDiv.id = `face-${faceName}`;
+                
+                for (let i = 0; i < 9; i++) {
+                    const square = document.createElement('div');
+                    square.className = 'cube-square';
+                    square.style.background = colorMap[rubiksCube.faces[faceName][i]];
+                    faceDiv.appendChild(square);
+                }
+                
+                cubeContainer.appendChild(faceDiv);
+            });
+        }
+
+        function createControlButtons() {
+            const container = document.getElementById('controlButtons');
+            container.innerHTML = '';
+            
+            const moves = ['U', 'F', 'R', 'B', 'L', 'D'];
+            
+            // Regular moves
+            const regularRow = document.createElement('div');
+            regularRow.style.marginBottom = '10px';
+            moves.forEach(move => {
+                const btn = document.createElement('button');
+                btn.textContent = move;
+                btn.className = 'move-btn';
+                btn.onclick = () => performCubeMove(move, true);
+                regularRow.appendChild(btn);
+            });
+            container.appendChild(regularRow);
+            
+            // Prime moves
+            const primeRow = document.createElement('div');
+            moves.forEach(move => {
+                const btn = document.createElement('button');
+                btn.textContent = move + "'";
+                btn.className = 'move-btn prime';
+                btn.onclick = () => performCubeMove(move + "'", true);
+                primeRow.appendChild(btn);
+            });
+            container.appendChild(primeRow);
+        }
+
+        function performCubeMove(move, updateDisplay = true) {
+            const face = move.replace("'", "");
+            const clockwise = !move.includes("'");
+            
+            // Rotate the face itself
+            rotateFace(face, clockwise);
+            
+            // Rotate adjacent edges
+            rotateEdges(face, clockwise);
+            
+            if (updateDisplay) {
+                updateCubeDisplay();
+                updateCubeProgress();
+            }
+        }
+
+        function rotateFace(face, clockwise) {
+            const faceArray = rubiksCube.faces[face];
+            const temp = [...faceArray];
+            
+            if (clockwise) {
+                // Clockwise 90° rotation pattern
+                faceArray[0] = temp[6]; faceArray[1] = temp[3]; faceArray[2] = temp[0];
+                faceArray[3] = temp[7]; faceArray[4] = temp[4]; faceArray[5] = temp[1];
+                faceArray[6] = temp[8]; faceArray[7] = temp[5]; faceArray[8] = temp[2];
+            } else {
+                // Counter-clockwise 90° rotation
+                faceArray[0] = temp[2]; faceArray[1] = temp[5]; faceArray[2] = temp[8];
+                faceArray[3] = temp[1]; faceArray[4] = temp[4]; faceArray[5] = temp[7];
+                faceArray[6] = temp[0]; faceArray[7] = temp[3]; faceArray[8] = temp[6];
+            }
+        }
+
+        function rotateEdges(face, clockwise) {
+            const { U, F, R, B, L, D } = rubiksCube.faces;
+            let temp;
+            
+            switch(face) {
+                case 'U': // Up face rotation
+                    temp = [F[0], F[1], F[2]];
+                    if (clockwise) {
+                        [F[0], F[1], F[2]] = [R[0], R[1], R[2]];
+                        [R[0], R[1], R[2]] = [B[0], B[1], B[2]];
+                        [B[0], B[1], B[2]] = [L[0], L[1], L[2]];
+                        [L[0], L[1], L[2]] = temp;
+                    } else {
+                        [F[0], F[1], F[2]] = [L[0], L[1], L[2]];
+                        [L[0], L[1], L[2]] = [B[0], B[1], B[2]];
+                        [B[0], B[1], B[2]] = [R[0], R[1], R[2]];
+                        [R[0], R[1], R[2]] = temp;
+                    }
+                    break;
+                    
+                case 'F': // Front face rotation
+                    temp = [U[6], U[7], U[8]];
+                    if (clockwise) {
+                        [U[6], U[7], U[8]] = [L[8], L[5], L[2]];
+                        [L[2], L[5], L[8]] = [D[0], D[1], D[2]];
+                        [D[0], D[1], D[2]] = [R[6], R[3], R[0]];
+                        [R[0], R[3], R[6]] = temp;
+                    } else {
+                        [U[6], U[7], U[8]] = [R[0], R[3], R[6]];
+                        [R[0], R[3], R[6]] = [D[2], D[1], D[0]];
+                        [D[0], D[1], D[2]] = [L[8], L[5], L[2]];
+                        [L[2], L[5], L[8]] = temp;
+                    }
+                    break;
+                    
+                case 'R': // Right face rotation
+                    temp = [U[2], U[5], U[8]];
+                    if (clockwise) {
+                        [U[2], U[5], U[8]] = [F[2], F[5], F[8]];
+                        [F[2], F[5], F[8]] = [D[2], D[5], D[8]];
+                        [D[2], D[5], D[8]] = [B[6], B[3], B[0]];
+                        [B[0], B[3], B[6]] = temp;
+                    } else {
+                        [U[2], U[5], U[8]] = [B[6], B[3], B[0]];
+                        [B[0], B[3], B[6]] = [D[2], D[5], D[8]];
+                        [D[2], D[5], D[8]] = [F[2], F[5], F[8]];
+                        [F[2], F[5], F[8]] = temp;
+                    }
+                    break;
+                    
+                case 'B': // Back face rotation  
+                    temp = [U[0], U[1], U[2]];
+                    if (clockwise) {
+                        [U[0], U[1], U[2]] = [R[2], R[5], R[8]];
+                        [R[2], R[5], R[8]] = [D[8], D[7], D[6]];
+                        [D[6], D[7], D[8]] = [L[0], L[3], L[6]];
+                        [L[0], L[3], L[6]] = temp;
+                    } else {
+                        [U[0], U[1], U[2]] = [L[6], L[3], L[0]];
+                        [L[0], L[3], L[6]] = [D[8], D[7], D[6]];
+                        [D[6], D[7], D[8]] = [R[2], R[5], R[8]];
+                        [R[2], R[5], R[8]] = temp;
+                    }
+                    break;
+                    
+                case 'L': // Left face rotation
+                    temp = [U[0], U[3], U[6]];
+                    if (clockwise) {
+                        [U[0], U[3], U[6]] = [B[8], B[5], B[2]];
+                        [B[2], B[5], B[8]] = [D[0], D[3], D[6]];
+                        [D[0], D[3], D[6]] = [F[0], F[3], F[6]];
+                        [F[0], F[3], F[6]] = temp;
+                    } else {
+                        [U[0], U[3], U[6]] = [F[0], F[3], F[6]];
+                        [F[0], F[3], F[6]] = [D[0], D[3], D[6]];
+                        [D[0], D[3], D[6]] = [B[8], B[5], B[2]];
+                        [B[2], B[5], B[8]] = temp;
+                    }
+                    break;
+                    
+                case 'D': // Down face rotation
+                    temp = [F[6], F[7], F[8]];
+                    if (clockwise) {
+                        [F[6], F[7], F[8]] = [L[6], L[7], L[8]];
+                        [L[6], L[7], L[8]] = [B[6], B[7], B[8]];
+                        [B[6], B[7], B[8]] = [R[6], R[7], R[8]];
+                        [R[6], R[7], R[8]] = temp;
+                    } else {
+                        [F[6], F[7], F[8]] = [R[6], R[7], R[8]];
+                        [R[6], R[7], R[8]] = [B[6], B[7], B[8]];
+                        [B[6], B[7], B[8]] = [L[6], L[7], L[8]];
+                        [L[6], L[7], L[8]] = temp;
+                    }
+                    break;
+            }
+        }
+
+        function updateCubeDisplay() {
+            const faceNames = ['U', 'F', 'R', 'B', 'L', 'D'];
+            
+            faceNames.forEach(faceName => {
+                const faceDiv = document.getElementById(`face-${faceName}`);
+                if (faceDiv) {
+                    const squares = faceDiv.querySelectorAll('.cube-square');
+                    squares.forEach((square, index) => {
+                        square.style.background = colorMap[rubiksCube.faces[faceName][index]];
+                    });
+                }
+            });
+        }
+
+        function updateCubeProgress() {
+            let solvedFaces = 0;
+            
+            Object.keys(rubiksCube.faces).forEach(faceName => {
+                const face = rubiksCube.faces[faceName];
+                const centerColor = face[4]; // Center piece determines target color
+                
+                if (face.every(color => color === centerColor)) {
+                    solvedFaces++;
+                }
+            });
+            
+            document.getElementById('cubeProgress').textContent = solvedFaces;
+            
+            rubiksCube.solved = (solvedFaces === 6);
+        }
+
+        function isCubeSolved() {
+            return rubiksCube.solved;
+        }
+
+         function endCubePuzzle(won) {
+             if (rubiksCube.timer) {
+                 clearInterval(rubiksCube.timer);
+                 rubiksCube.timer = null;
+             }
+             
+             document.getElementById('cubePuzzleOverlay').style.display = 'none';
+             document.getElementById('cubePuzzle').style.display = 'none';
+             
+             if (won) {
+                 gameState = 'giftScene';
+                 showGiftScene();
+             } else {
+                 gameState = 'gameOver';
+                 document.getElementById('gameOver').style.display = 'block';
+             }
+         }
+
+         // Gift and Proposal Scene Functions
+         function showGiftScene() {
+             document.getElementById('giftScene').style.display = 'flex';
+             
+             // Add some floating hearts in the background
+             createFloatingHearts();
+         }
+
+         function openGift() {
+             // Hide gift scene
+             document.getElementById('giftScene').style.display = 'none';
+             
+             // Show proposal scene
+             gameState = 'proposalScene';
+             showProposalScene();
+         }
+
+         function showProposalScene() {
+             document.getElementById('proposalScene').style.display = 'flex';
+             
+             // Create more hearts for the proposal
+             createProposalHearts();
+         }
+
+         function acceptProposal() {
+             // Hide proposal scene
+             document.getElementById('proposalScene').style.display = 'none';
+             
+             // Show heart zoom scene
+             gameState = 'heartZoomScene';
+             document.getElementById('heartZoomScene').style.display = 'flex';
+             
+             // Create celebration hearts in background
+             createCelebrationHearts();
+         }
+
+         function createFloatingHearts() {
+             const heartsContainer = document.getElementById('giftScene');
+             
+             for (let i = 0; i < 10; i++) {
+                 setTimeout(() => {
+                     const heart = document.createElement('div');
+                     heart.className = 'heart';
+                     heart.innerHTML = '💖';
+                     heart.style.left = Math.random() * 100 + '%';
+                     heart.style.animationDelay = Math.random() * 2 + 's';
+                     heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                     heart.style.position = 'absolute';
+                     heart.style.zIndex = '1'; // Behind gift box
+                     heart.style.pointerEvents = 'none';
+                     heartsContainer.appendChild(heart);
+                     
+                     // Remove heart after animation
+                     setTimeout(() => {
+                         if (heart.parentNode) {
+                             heart.parentNode.removeChild(heart);
+                         }
+                     }, 5000);
+                 }, i * 200);
+             }
+         }
+
+         function createProposalHearts() {
+             const heartsContainer = document.getElementById('heartsContainer');
+             
+             // Create hearts continuously
+             setInterval(() => {
+                 const heart = document.createElement('div');
+                 heart.className = 'heart';
+                 heart.innerHTML = ['💕', '💖', '💗', '💝', '💘'][Math.floor(Math.random() * 5)];
+                 heart.style.left = Math.random() * 100 + '%';
+                 heart.style.animationDelay = '0s';
+                 heart.style.animationDuration = (Math.random() * 2 + 3) + 's';
+                 heartsContainer.appendChild(heart);
+                 
+                 // Remove heart after animation
+                 setTimeout(() => {
+                     if (heart.parentNode) {
+                         heart.parentNode.removeChild(heart);
+                     }
+                 }, 5000);
+             }, 500);
+         }
+
+         function createCelebrationHearts() {
+             const heartsContainer = document.getElementById('heartZoomScene');
+             
+             // Create a burst of hearts
+             for (let i = 0; i < 20; i++) {
+                 setTimeout(() => {
+                     const heart = document.createElement('div');
+                     heart.className = 'heart';
+                     heart.innerHTML = ['💕', '💖', '💗', '💝', '💘', '🎉', '✨'][Math.floor(Math.random() * 7)];
+                     heart.style.left = Math.random() * 100 + '%';
+                     heart.style.animationDelay = '0s';
+                     heart.style.animationDuration = '2s';
+                     heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                     heart.style.position = 'absolute';
+                     heart.style.pointerEvents = 'none';
+                     heart.style.zIndex = '1'; // Behind the big heart and text
+                     heartsContainer.appendChild(heart);
+                     
+                     // Remove heart after animation
+                     setTimeout(() => {
+                         if (heart.parentNode) {
+                             heart.parentNode.removeChild(heart);
+                         }
+                     }, 2000);
+                 }, i * 50);
+             }
+         }
+        
+        // Drawing functions
+        function drawBackground() {
+            ctx.fillStyle = '#3a5f3a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Grid pattern
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            
+            for (let x = -camera.x % TILE_SIZE; x < canvas.width; x += TILE_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            for (let y = -camera.y % TILE_SIZE; y < canvas.height; y += TILE_SIZE) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+        
+        function drawPlayer() {
+            const screenX = player.x - camera.x;
+            const screenY = player.y - camera.y;
+            
+            // Draw shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(screenX, screenY + player.height/2 - 2, 
+                       player.width/2 - 4, player.height/4 - 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Player body sprite (rotates with aim)
+            drawSpriteCentered(sprites.player, player.x, player.y, player.aimAngle, 40, 40);
+
+            // Gun sprite in player's hands
+            const gunImg = sprites.guns[player.currentGun];
+            if (gunImg) {
+                // Offset the gun slightly forward in the facing direction
+                const offsetDistance = 25;
+                const offsetX = player.x + Math.cos(player.aimAngle) * offsetDistance;
+                const offsetY = player.y + Math.sin(player.aimAngle) * offsetDistance;
+                drawSpriteCentered(gunImg, offsetX, offsetY, player.aimAngle, 28, 14);
+            }
+        }
+        
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                const screenX = enemy.x - camera.x;
+                const screenY = enemy.y - camera.y;
+                
+                // Skip if off screen
+                if (screenX < -50 || screenX > canvas.width + 50 || 
+                    screenY < -50 || screenY > canvas.height + 50) return;
+                
+                // Enemy sprite rotated towards its angle
+                const img = sprites.enemies[enemy.type];
+                const alpha = enemy.type === 'ghost' ? 0.7 : 1;
+                const scale = 1.0;
+                const drawSize = Math.max(24, enemy.size);
+                drawSpriteCentered(img, enemy.x, enemy.y, enemy.angle, drawSize * scale, drawSize * scale, alpha);
+
+                // Health bar (screen space)
+                const barWidth = enemy.size;
+                const barHeight = 4;
+                ctx.fillStyle = '#ff0000';
+                ctx.fillRect(screenX - barWidth/2, screenY - enemy.size/2 - 10, barWidth, barHeight);
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(screenX - barWidth/2, screenY - enemy.size/2 - 10, 
+                            barWidth * (enemy.hp / enemy.maxHp), barHeight);
+            });
+        }
+        
+        function drawBullets() {
+            // Player bullets
+            bullets.forEach(bullet => {
+                const screenX = bullet.x - camera.x;
+                const screenY = bullet.y - camera.y;
+                
+                ctx.fillStyle = bullet.color;
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, bullet.size, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Candy wrapper effect
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+            
+            // Enemy bullets
+            enemyBullets.forEach(bullet => {
+                const screenX = bullet.x - camera.x;
+                const screenY = bullet.y - camera.y;
+                
+                ctx.fillStyle = bullet.color;
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, bullet.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+        
+        function drawPickups() {
+            pickups.forEach(pickup => {
+                const screenX = pickup.x - camera.x;
+                const screenY = pickup.y - camera.y + Math.sin(pickup.bobOffset) * 3;
+                
+                if (pickup.type === 'health') {
+                    drawSpriteCentered(sprites.pickups.health, pickup.x, pickup.y + Math.sin(pickup.bobOffset) * 3, 0, 28, 28);
+                } else if (pickup.type === 'bullets') {
+                    drawSpriteCentered(sprites.pickups.bullets, pickup.x, pickup.y + Math.sin(pickup.bobOffset) * 3, 0, 26, 18);
+                } else if (pickup.type === 'gun') {
+                    const gunImg = pickup.gunType && sprites.pickups['gun_' + pickup.gunType];
+                    drawSpriteCentered(gunImg || sprites.pickups.gun_basic, pickup.x, pickup.y + Math.sin(pickup.bobOffset) * 3, 0, 35, 18);
+                }
+            });
+        }
+        
+        function drawCubeParts() {
+            cubeParts.forEach(cubePart => {
+                const screenX = cubePart.x - camera.x;
+                const screenY = cubePart.y - camera.y + Math.sin(cubePart.bobOffset) * 3;
+                
+                // Skip if off screen
+                if (screenX < -50 || screenX > canvas.width + 50 || 
+                    screenY < -50 || screenY > canvas.height + 50) return;
+                
+                // Draw cube part as a small colored square
+                ctx.save();
+                ctx.translate(screenX, screenY);
+                ctx.rotate(cubePart.bobOffset);
+                
+                ctx.fillStyle = cubePart.color;
+                ctx.fillRect(-cubePart.size/2, -cubePart.size/2, cubePart.size, cubePart.size);
+                
+                // Add sparkle effect
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-cubePart.size/2, -cubePart.size/2, cubePart.size, cubePart.size);
+                
+                ctx.restore();
+            });
+        }
+        
+        function drawBoss() {
+            if (!boss.active) return;
+            
+            const screenX = boss.x - camera.x;
+            const screenY = boss.y - camera.y;
+            
+            // Skip if off screen
+            if (screenX < -100 || screenX > canvas.width + 100 || 
+                screenY < -100 || screenY > canvas.height + 100) return;
+            
+            // Draw boss sprite
+            drawSpriteCentered(sprites.boss, boss.x, boss.y, boss.angle, boss.size, boss.size);
+            
+            // Boss health bar
+            const barWidth = boss.size * 1.5;
+            const barHeight = 8;
+            const barX = screenX - barWidth/2;
+            const barY = screenY - boss.size/2 - 15;
+            
+            ctx.fillStyle = '#ff0000';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            ctx.fillStyle = '#00ff00';
+            ctx.fillRect(barX, barY, barWidth * (boss.hp / boss.maxHp), barHeight);
+            
+            // Boss name
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('KIAN', screenX, barY - 5);
+        }
+        
+        function drawParticles() {
+            particles.forEach(particle => {
+                const screenX = particle.x - camera.x;
+                const screenY = particle.y - camera.y;
+                
+                const alpha = particle.lifetime / particle.maxLifetime;
+                ctx.globalAlpha = alpha;
+                ctx.fillStyle = particle.color;
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, particle.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            });
+        }
+        
+        function drawAimLine() {
+            const screenX = player.x - camera.x;
+            const screenY = player.y - camera.y;
+            
+            ctx.strokeStyle = 'rgba(255, 105, 180, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(screenX, screenY);
+            ctx.lineTo(
+                screenX + Math.cos(player.aimAngle) * 80,
+                screenY + Math.sin(player.aimAngle) * 80
+            );
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        function drawCrosshair() {
+            ctx.strokeStyle = '#ff69b4';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(mouse.x - 10, mouse.y);
+            ctx.lineTo(mouse.x + 10, mouse.y);
+            ctx.moveTo(mouse.x, mouse.y - 10);
+            ctx.lineTo(mouse.x, mouse.y + 10);
+            ctx.stroke();
+        }
+        
+        function updateUI() {
+            document.getElementById('hpText').textContent = Math.max(0, player.hp);
+            document.getElementById('healthBar').style.width = 
+                Math.max(0, (player.hp / player.maxHp) * 100) + '%';
+            document.getElementById('bulletCount').textContent = player.bullets;
+            document.getElementById('currentGun').textContent = guns[player.currentGun].name;
+            document.getElementById('cubeCount').textContent = cubeSystem.collectedParts + '/' + cubeSystem.totalParts;
+        }
+        
+         function restartGame() {
+             gameState = 'playing';
+             player.hp = 100;
+             player.bullets = 30;
+             player.x = WORLD_WIDTH / 2;
+             player.y = WORLD_HEIGHT / 2;
+             player.currentGun = 'basic';
+             
+             enemies.length = 0;
+             bullets.length = 0;
+             pickups.length = 0;
+             particles.length = 0;
+             enemyBullets.length = 0;
+             cubeParts.length = 0;
+             
+             cubeSystem.collectedParts = 0;
+             boss.active = false;
+             boss.hp = boss.maxHp;
+             
+             enemySpawnTimer = 0;
+             pickupSpawnTimer = 0;
+             
+             // Hide all UI elements
+             document.getElementById('gameOver').style.display = 'none';
+             document.getElementById('cubePuzzleOverlay').style.display = 'none';
+             document.getElementById('cubePuzzle').style.display = 'none';
+             document.getElementById('gameComplete').style.display = 'none';
+             document.getElementById('giftScene').style.display = 'none';
+             document.getElementById('proposalScene').style.display = 'none';
+             document.getElementById('heartZoomScene').style.display = 'none';
+             
+             // Clear hearts containers
+             const heartsContainer = document.getElementById('heartsContainer');
+             if (heartsContainer) {
+                 heartsContainer.innerHTML = '';
+             }
+             
+             if (rubiksCube.timer) {
+                 clearInterval(rubiksCube.timer);
+                 rubiksCube.timer = null;
+             }
+             
+             updateUI();
+         }
+        
+        // Main game loop
+        function gameLoop() {
+            // Update
+            if (gameState === 'playing') {
+                updatePlayer();
+                updateBullets();
+                updateEnemies();
+                updatePickups();
+                updateCubeParts();
+                updateBoss();
+                updateParticles();
+                updateCamera();
+                
+                // Spawn enemies
+                const MAX_ENEMIES = 40;
+                enemySpawnTimer++;
+                if (enemySpawnTimer > 120) { // every 2 seconds
+                    if (enemies.length < MAX_ENEMIES) {
+                        spawnEnemy();
+                    }
+                    enemySpawnTimer = 0;
+                }
+                
+                // Spawn pickups
+                pickupSpawnTimer++;
+                if (pickupSpawnTimer > 600) { // Spawn every 10 seconds
+                    spawnPickup();
+                    pickupSpawnTimer = 0;
+                }
+            }
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw everything
+            drawBackground();
+            drawPickups();
+            drawCubeParts();
+            drawBullets();
+            drawEnemies();
+            drawBoss();
+            drawPlayer();
+            drawParticles();
+            drawAimLine();
+            drawCrosshair();
+            
+            // Draw world bounds
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(-camera.x, -camera.y, WORLD_WIDTH, WORLD_HEIGHT);
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Initialize UI and start game
+        updateUI();
+        gameLoop();
+        
+        // Handle window focus for smoother gameplay
+        window.addEventListener('blur', () => {
+            Object.keys(keys).forEach(key => keys[key] = false);
+            mouse.isPressed = false;
+        });
+    </script>
+</body>
+</html>
