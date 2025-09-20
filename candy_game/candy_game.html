@@ -275,8 +275,8 @@
              height: 200px;
              background: url('image/gift.png') no-repeat center center;
              background-size: contain;
-             background-color: #6f63c4;
              border: 5px solid #ff4757;
+             background-color: #6f63c4;
              border-radius: 20px;
              margin: 0 auto 30px;
              position: relative;
@@ -834,7 +834,7 @@
             y: 0,
             hp: 10000,
             maxHp: 10000,
-            damage: 50,
+            damage: 30,
             size: 250,
             speed: 1.5,
             angle: 0,
@@ -1318,7 +1318,7 @@
                 // Check collision with player
                 const dist = Math.hypot(cubePart.x - player.x, cubePart.y - player.y);
                 if (dist < 20) {
-                    cubeSystem.collectedParts += 3;
+                    cubeSystem.collectedParts += 5; // Each cube part gives 5 cubes
                     createParticles(cubePart.x, cubePart.y, cubePart.color, 8);
                     cubeParts.splice(i, 1);
                     updateUI();
