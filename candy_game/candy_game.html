@@ -73,6 +73,285 @@
             background: linear-gradient(90deg, #ff4444, #ff8888);
             transition: width 0.3s ease;
         }
+        /* Help Book Styles */
+        /* Help Book Styles - Old Book with Wooden Table */
+#helpBook {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+        radial-gradient(ellipse at center, #8B4513 0%, #654321 50%, #3E2723 100%),
+        repeating-linear-gradient(
+            90deg,
+            #8B4513 0px,
+            #A0522D 2px,
+            #8B4513 4px,
+            #654321 6px,
+            #8B4513 8px
+        ),
+        repeating-linear-gradient(
+            0deg,
+            transparent 0px,
+            rgba(0,0,0,0.1) 1px,
+            transparent 2px,
+            rgba(0,0,0,0.05) 3px,
+            transparent 4px
+        );
+    background-size: 100% 100%, 120px 120px, 8px 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Wood grain texture */
+#helpBook::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 30% 20%, rgba(139,69,19,0.3) 0%, transparent 20%),
+        radial-gradient(circle at 70% 60%, rgba(160,82,45,0.2) 0%, transparent 25%),
+        radial-gradient(circle at 20% 80%, rgba(101,67,33,0.3) 0%, transparent 15%);
+    opacity: 0.7;
+}
+
+.book-container {
+    perspective: 1500px;
+    transform-style: preserve-3d;
+    animation: bookFloat 6s ease-in-out infinite;
+}
+
+@keyframes bookFloat {
+    0%, 100% { transform: translateY(0px) rotateX(0deg); }
+    50% { transform: translateY(-10px) rotateX(2deg); }
+}
+
+.book {
+    width: 850px;
+    height: 650px;
+    position: relative;
+    transform-style: preserve-3d;
+    background: 
+        linear-gradient(145deg, #DEB887 0%, #D2B48C 30%, #CD853F 70%, #A0522D 100%);
+    border: 4px solid #8B4513;
+    border-radius: 12px;
+    box-shadow: 
+        0 20px 40px rgba(0,0,0,0.4),
+        0 8px 16px rgba(0,0,0,0.3),
+        inset 0 2px 0 rgba(255,255,255,0.2),
+        inset 0 -2px 0 rgba(0,0,0,0.3);
+}
+
+/* Old book leather texture */
+.book::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        repeating-linear-gradient(
+            45deg,
+            transparent 0px,
+            rgba(0,0,0,0.05) 1px,
+            transparent 2px,
+            rgba(255,255,255,0.03) 3px,
+            transparent 4px
+        ),
+        radial-gradient(circle at 20% 30%, rgba(139,69,19,0.1) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(160,82,45,0.1) 0%, transparent 40%);
+    border-radius: 12px;
+}
+
+.book-page {
+    position: absolute;
+    width: 400px;
+    height: 580px;
+    background: linear-gradient(145deg, #efc98b 0%, #ecc588 20%, #dcaa67 50%, #f1cc8d 80%, #dca767 100%);
+    border: 2px solid #D2B48C;
+    border-radius: 8px;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 
+        0 8px 20px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.4),
+        inset 0 -1px 0 rgba(0,0,0,0.1);
+}
+
+/* Old paper aging */
+.book-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 85% 15%, rgba(139,69,19,0.15) 0%, transparent 30%),
+        radial-gradient(circle at 15% 85%, rgba(160,82,45,0.1) 0%, transparent 35%),
+        radial-gradient(circle at 60% 30%, rgba(205,133,63,0.08) 0%, transparent 25%);
+    border-radius: 8px;
+    pointer-events: none;
+}
+
+.left-page {
+    left: 15px;
+    top: 35px;
+}
+
+.right-page {
+    right: 15px;
+    top: 35px;
+}
+
+.page-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.book-controls {
+    position: absolute;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.book-btn {
+    padding: 12px 24px;
+    font-family: 'Times New Roman', serif;
+    font-size: 15px;
+    font-weight: bold;
+    background: 
+        linear-gradient(145deg, #DEB887 0%, #D2B48C 50%, #CD853F 100%);
+    color: #3E2723;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    border: 2px solid #8B4513;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 
+        0 4px 8px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.4),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+    min-width: 100px;
+}
+
+.book-btn:hover:not(:disabled) {
+    background: 
+        linear-gradient(145deg, #F5DEB3 0%, #DEB887 50%, #D2B48C 100%);
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 12px rgba(0,0,0,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.5),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+}
+
+.book-btn:active:not(:disabled) {
+    transform: translateY(0px);
+    box-shadow: 
+        0 2px 4px rgba(0,0,0,0.4),
+        inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.book-btn:disabled {
+    background: 
+        linear-gradient(145deg, #A0A0A0 0%, #888888 50%, #666666 100%);
+    color: #444444;
+    cursor: not-allowed;
+    box-shadow: 
+        0 2px 4px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.1);
+}
+
+.start-game-btn {
+    background: 
+        linear-gradient(145deg, #228B22 0%, #32CD32 50%, #228B22 100%);
+    color: white;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+    font-size: 18px;
+    font-weight: bold;
+    padding: 14px 28px;
+    border: 2px solid #006400;
+    box-shadow: 
+        0 6px 12px rgba(34,139,34,0.4),
+        inset 0 1px 0 rgba(255,255,255,0.3),
+        inset 0 -1px 0 rgba(0,0,0,0.2);
+    animation: startGameGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes startGameGlow {
+    0%, 100% { 
+        box-shadow: 
+            0 6px 12px rgba(34,139,34,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.3),
+            inset 0 -1px 0 rgba(0,0,0,0.2);
+    }
+    50% { 
+        box-shadow: 
+            0 8px 16px rgba(34,139,34,0.6),
+            0 0 15px rgba(50,205,50,0.4),
+            inset 0 1px 0 rgba(255,255,255,0.3),
+            inset 0 -1px 0 rgba(0,0,0,0.2);
+    }
+}
+
+.start-game-btn:hover {
+    background: 
+        linear-gradient(145deg, #32CD32 0%, #40E040 50%, #32CD32 100%);
+    transform: translateY(-2px);
+    box-shadow: 
+        0 8px 16px rgba(34,139,34,0.5),
+        0 0 20px rgba(50,205,50,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+.page-counter {
+    color: #3E2723;
+    font-family: 'Times New Roman', serif;
+    font-size: 16px;
+    font-weight: bold;
+    background: 
+        linear-gradient(145deg, #F5DEB3 0%, #DEB887 50%, #D2B48C 100%);
+    padding: 10px 16px;
+    border: 2px solid #8B4513;
+    border-radius: 8px;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+    box-shadow: 
+        0 4px 8px rgba(0,0,0,0.2),
+        inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+.book-spine {
+    position: absolute;
+    left: 50%;
+    top: 35px;
+    transform: translateX(-50%);
+    width: 4px;
+    height: 580px;
+    background: 
+        linear-gradient(180deg, #8B4513 0%, #654321 50%, #8B4513 100%);
+    border-radius: 2px;
+    box-shadow: 
+        inset 1px 0 0 rgba(255,255,255,0.1),
+        inset -1px 0 0 rgba(0,0,0,0.3),
+        0 0 6px rgba(0,0,0,0.4);
+}
 
         .ammo-counter {
             color: #ffd700;
@@ -577,7 +856,6 @@
             <div style="margin-top: 10px;">
                 <div>WASD - Move</div>
                 <div>Mouse - Aim & Shoot</div>
-                <div>R - Reload (when near bullets)</div>
             </div>
         </div>
         <div id="gameOver">
@@ -649,7 +927,29 @@
                  <button onclick="restartGame()" style="background: #ff69b4; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 25px; cursor: pointer; box-shadow: 0 5px 15px rgba(255,105,180,0.4);">Play Again 💕</button>
              </div>
          </div>
+    <!-- Help Book -->
+<div id="helpBook">
+    <div class="book-container">
+        <div class="book">
+            <div class="book-spine"></div>
+            <div class="book-page left-page">
+                <img id="leftPageImg" class="page-image" src="image/page1.png" alt="Help Page">
+            </div>
+            <div class="book-page right-page">
+                <img id="rightPageImg" class="page-image" src="image/page2.png" alt="Help Page">
+            </div>
+            <div class="book-controls">
+                <button class="book-btn" id="prevPageBtn" onclick="previousPage()">← Previous</button>
+                <div class="page-counter">
+                    <span id="pageCounter">1-2</span>
+                </div>
+                <button class="book-btn" id="nextPageBtn" onclick="nextPage()">Next →</button>
+                <button class="book-btn start-game-btn" onclick="startGame()">Start Game</button>
+            </div>
+        </div>
     </div>
+</div>
+        </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
@@ -670,8 +970,14 @@
         const WORLD_HEIGHT = 3000;
         
         // Game state
-        let gameState = 'playing'; // 'playing', 'gameOver', 'cubePuzzle', 'completed'
-        
+let gameState = 'helpBook';
+
+// Help book system
+const helpBook = {
+    currentPage: 1,
+    totalPages: 14, // Adjust this based on how many pages you have
+    maxPagesPerSpread: 2 // Two pages shown at once
+};        
         // Sprite assets (placeholders) - RESTORED ORIGINAL SYSTEM
         const sprites = {
             player: new Image(),
@@ -892,7 +1198,7 @@
                 name: 'Ghost',
                 hp: 70,
                 damage: 20,
-                speed: 2.0,
+                speed: 3.0,
                 size: 60,
                 color: 'rgba(200, 200, 255, 0.7)',
                 type: 'melee',
@@ -1001,6 +1307,7 @@
         
         // Enemy spawning
         function spawnEnemy() {
+            
             const totalWeight = Object.values(enemyTypes).reduce((sum, type) => sum + type.spawnWeight, 0);
             let random = Math.random() * totalWeight;
             
@@ -1013,8 +1320,12 @@
                 }
             }
             
-            const typeData = enemyTypes[selectedType];
+            // Add this condition to prevent ghost spawning when HP >= 50
+            if (selectedType === 'ghost' && player.hp >= 50) {
+                selectedType = 'pinkMonster'; // Default to pinkMonster instead
+            }
             
+            const typeData = enemyTypes[selectedType]
             // Spawn at edge of screen
             const side = Math.floor(Math.random() * 4);
             let x, y;
@@ -2151,51 +2462,102 @@
             document.getElementById('currentGun').textContent = guns[player.currentGun].name;
             document.getElementById('cubeCount').textContent = cubeSystem.collectedParts + '/' + cubeSystem.totalParts;
         }
+        // Help Book Functions
+function updateBookPages() {
+    const leftPageImg = document.getElementById('leftPageImg');
+    const rightPageImg = document.getElementById('rightPageImg');
+    const pageCounter = document.getElementById('pageCounter');
+    const prevBtn = document.getElementById('prevPageBtn');
+    const nextBtn = document.getElementById('nextPageBtn');
+    
+    // Update page images
+    leftPageImg.src = `image/page${helpBook.currentPage}.png`;
+    
+    // Check if there's a right page
+    if (helpBook.currentPage + 1 <= helpBook.totalPages) {
+        rightPageImg.src = `image/page${helpBook.currentPage + 1}.png`;
+        rightPageImg.style.display = 'block';
+        pageCounter.textContent = `${helpBook.currentPage}-${helpBook.currentPage + 1}`;
+    } else {
+        rightPageImg.style.display = 'none';
+        pageCounter.textContent = `${helpBook.currentPage}`;
+    }
+    
+    // Update button states
+    prevBtn.disabled = helpBook.currentPage <= 1;
+    nextBtn.disabled = helpBook.currentPage + 1 >= helpBook.totalPages;
+}
+
+function nextPage() {
+    if (helpBook.currentPage + helpBook.maxPagesPerSpread < helpBook.totalPages) {
+        helpBook.currentPage += helpBook.maxPagesPerSpread;
+        updateBookPages();
+    }
+}
+
+function previousPage() {
+    if (helpBook.currentPage > 1) {
+        helpBook.currentPage -= helpBook.maxPagesPerSpread;
+        updateBookPages();
+    }
+}
+
+function startGame() {
+    document.getElementById('helpBook').style.display = 'none';
+    gameState = 'playing';
+    updateUI();
+}
         
          function restartGame() {
-             gameState = 'playing';
-             player.hp = 100;
-             player.bullets = 30;
-             player.x = WORLD_WIDTH / 2;
-             player.y = WORLD_HEIGHT / 2;
-             player.currentGun = 'basic';
-             
-             enemies.length = 0;
-             bullets.length = 0;
-             pickups.length = 0;
-             particles.length = 0;
-             enemyBullets.length = 0;
-             cubeParts.length = 0;
-             
-             cubeSystem.collectedParts = 0;
-             boss.active = false;
-             boss.hp = boss.maxHp;
-             
-             enemySpawnTimer = 0;
-             pickupSpawnTimer = 0;
-             
-             // Hide all UI elements
-             document.getElementById('gameOver').style.display = 'none';
-             document.getElementById('cubePuzzleOverlay').style.display = 'none';
-             document.getElementById('cubePuzzle').style.display = 'none';
-             document.getElementById('gameComplete').style.display = 'none';
-             document.getElementById('giftScene').style.display = 'none';
-             document.getElementById('proposalScene').style.display = 'none';
-             document.getElementById('heartZoomScene').style.display = 'none';
-             
-             // Clear hearts containers
-             const heartsContainer = document.getElementById('heartsContainer');
-             if (heartsContainer) {
-                 heartsContainer.innerHTML = '';
-             }
-             
-             if (rubiksCube.timer) {
-                 clearInterval(rubiksCube.timer);
-                 rubiksCube.timer = null;
-             }
-             
-             updateUI();
-         }
+    // Show help book again
+    gameState = 'helpBook';
+    helpBook.currentPage = 1;
+    document.getElementById('helpBook').style.display = 'flex';
+    updateBookPages();
+    
+    // Reset game state
+    player.hp = 100;
+    player.bullets = 30;
+    player.x = WORLD_WIDTH / 2;
+    player.y = WORLD_HEIGHT / 2;
+    player.currentGun = 'basic';
+    
+    enemies.length = 0;
+    bullets.length = 0;
+    pickups.length = 0;
+    particles.length = 0;
+    enemyBullets.length = 0;
+    cubeParts.length = 0;
+    
+    cubeSystem.collectedParts = 0;
+    boss.active = false;
+    boss.hp = boss.maxHp;
+    
+    enemySpawnTimer = 0;
+    pickupSpawnTimer = 0;
+    
+    // Hide all UI elements
+    document.getElementById('gameOver').style.display = 'none';
+    document.getElementById('cubePuzzleOverlay').style.display = 'none';
+    document.getElementById('cubePuzzle').style.display = 'none';
+    document.getElementById('gameComplete').style.display = 'none';
+    document.getElementById('giftScene').style.display = 'none';
+    document.getElementById('proposalScene').style.display = 'none';
+    document.getElementById('heartZoomScene').style.display = 'none';
+    
+    // Clear hearts containers
+    const heartsContainer = document.getElementById('heartsContainer');
+    if (heartsContainer) {
+        heartsContainer.innerHTML = '';
+    }
+    
+    if (rubiksCube.timer) {
+        clearInterval(rubiksCube.timer);
+        rubiksCube.timer = null;
+    }
+    
+    updateUI();
+}
         
         // Main game loop
         function gameLoop() {
@@ -2252,9 +2614,10 @@
         }
         
         // Initialize UI and start game
-        updateUI();
-        gameLoop();
-        
+// Initialize UI and start game
+updateUI();
+updateBookPages(); // Initialize help book
+gameLoop();
         // Handle window focus for smoother gameplay
         window.addEventListener('blur', () => {
             Object.keys(keys).forEach(key => keys[key] = false);
