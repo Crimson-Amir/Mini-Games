@@ -1635,7 +1635,8 @@ const helpBook = {
                     updateUI();
                     
                     // Check if all cubes collected
-                    if (cubeSystem.collectedParts >= cubeSystem.totalParts) {
+                    // Check if all cubes collected
+                if (cubeSystem.collectedParts >= cubeSystem.totalParts && !boss.active && gameState === 'playing') {
                         spawnBoss();
                     }
                 }
@@ -2510,10 +2511,7 @@ function startGame() {
         
          function restartGame() {
     // Show help book again
-    gameState = 'helpBook';
-    helpBook.currentPage = 1;
-    document.getElementById('helpBook').style.display = 'flex';
-    updateBookPages();
+    gameState = 'playing';
     
     // Reset game state
     player.hp = 100;
