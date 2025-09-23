@@ -952,6 +952,10 @@
         </div>
 
     <script>
+
+        // Sound system
+
+
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         
@@ -1278,6 +1282,8 @@ const helpBook = {
             if (now - player.lastShotTime < gunData.cooldown) return;
             if (player.bullets <= 0) return;
 
+            playSound(sounds.shoot, 0.2);
+
             for (let i = 0; i < gunData.bulletsPerShot; i++) {
                 const spread = (gunData.bulletsPerShot > 1)
                     ? (i - (gunData.bulletsPerShot - 1) / 2) * gunData.spread
@@ -1447,6 +1453,7 @@ const helpBook = {
             // Check for death
             if (player.hp <= 0) {
                 gameState = 'gameOver';
+                    playSound(sounds.gameOver, 0.3);
                 document.getElementById('gameOver').style.display = 'block';
             }
         }
@@ -1466,28 +1473,35 @@ const helpBook = {
                     continue;
                 }
                 
-                // Check enemy collision
-                for (let j = enemies.length - 1; j >= 0; j--) {
-                    const enemy = enemies[j];
-                    const dist = Math.hypot(bullet.x - enemy.x, bullet.y - enemy.y);
-                    
-                    if (dist < enemy.size/2 + bullet.size) {
-                        enemy.hp -= bullet.damage;
-                        bullets.splice(i, 1);
-                        
-                        // Create hit particles
-                        createParticles(enemy.x, enemy.y, '#ff4444', 5);
-                        
-                        if (enemy.hp <= 0) {
-                            // Chance to drop cube part
-                            if (Math.random() < cubeSystem.dropChance && cubeSystem.collectedParts < cubeSystem.totalParts) {
-                                spawnCubePart(enemy.x, enemy.y);
-                            }
-                            enemies.splice(j, 1);
-                        }
-                        break;
-                    }
-                }
+for (let j = enemies.length - 1; j >= 0; j--) {
+    
+    const enemy = enemies[j];
+    const dist = Math.hypot(bullet.x - enemy.x, bullet.y - enemy.y);
+    
+    if (dist < enemy.size/2 + bullet.size) {
+        enemy.hp -= bullet.damage;
+        bullets.splice(i, 1);
+        
+        
+        // Play enemy damage sound
+        playRandomSound(sounds.enemyDamage, 0.15);
+        
+        // Create hit particles
+        createParticles(enemy.x, enemy.y, '#ff4444', 5);
+        
+        if (enemy.hp <= 0) {
+            // Play enemy death sound
+            playSound(sounds.enemyDead, 0.2);
+            
+            // Chance to drop cube part
+            if (Math.random() < cubeSystem.dropChance && cubeSystem.collectedParts < cubeSystem.totalParts) {
+                spawnCubePart(enemy.x, enemy.y);
+            }
+            enemies.splice(j, 1);
+        }
+        break;
+    }
+}
                 
                 // Check boss collision
                 if (boss.active) {
@@ -1515,9 +1529,15 @@ const helpBook = {
                 
                 // Check player collision
                 const dist = Math.hypot(bullet.x - player.x, bullet.y - player.y);
+                
+
                 if (dist < player.width/2 + bullet.size) {
                     player.hp -= bullet.damage;
                     enemyBullets.splice(i, 1);
+                    
+                    // Play player damage sound
+                    playSound(sounds.playerDamage, 0.4);
+                    
                     createParticles(player.x, player.y, '#ff0000', 3);
                     updateUI();
                 }
@@ -1603,15 +1623,18 @@ const helpBook = {
                 const dist = Math.hypot(pickup.x - player.x, pickup.y - player.y);
                 if (dist < 25) {
                     if (pickup.type === 'health') {
-                        player.hp = Math.min(player.maxHp, player.hp + 50);
-                        createParticles(pickup.x, pickup.y, '#00ff00', 10);
-                    } else if (pickup.type === 'bullets') {
-                        player.bullets = Math.min(player.maxBullets, player.bullets + 30);
-                        createParticles(pickup.x, pickup.y, '#ffff00', 8);
-                    } else if (pickup.type === 'gun') {
-                        player.currentGun = pickup.gunType;
-                        createParticles(pickup.x, pickup.y, '#ff00ff', 12);
-                    }
+                    player.hp = Math.min(player.maxHp, player.hp + 50);
+                    playSound(sounds.pickupHealth, 0.3);
+                    createParticles(pickup.x, pickup.y, '#00ff00', 10);
+                } else if (pickup.type === 'bullets') {
+                    player.bullets = Math.min(player.maxBullets, player.bullets + 30);
+                    playSound(sounds.pickupBullets, 0.3);
+                    createParticles(pickup.x, pickup.y, '#ffff00', 8);
+                } else if (pickup.type === 'gun') {
+                    player.currentGun = pickup.gunType;
+                    playSound(sounds.pickupGun, 0.4);
+                    createParticles(pickup.x, pickup.y, '#ff00ff', 12);
+                }
                     
                     pickups.splice(i, 1);
                     updateUI();
@@ -1630,6 +1653,7 @@ const helpBook = {
                 const dist = Math.hypot(cubePart.x - player.x, cubePart.y - player.y);
                 if (dist < 20) {
                     cubeSystem.collectedParts += 5; // Each cube part gives 5 cubes
+                    playSound(sounds.pickupCube, 0.3);
                     createParticles(cubePart.x, cubePart.y, cubePart.color, 8);
                     cubeParts.splice(i, 1);
                     updateUI();
@@ -1646,6 +1670,7 @@ const helpBook = {
         function spawnBoss() {
             boss.active = true;
             boss.hp = boss.maxHp;
+            playSound(sounds.bossSpawn, 0.5);
             
             // Spawn boss from edge of screen like other enemies
             const side = Math.floor(Math.random() * 4);
@@ -1688,7 +1713,7 @@ const helpBook = {
             const dist = Math.hypot(dx, dy);
             
             if (dist > 0) {
-                boss.angle = Math.atan2(dy, dx);
+                boss.angle = Math.atan2(dy, dx);ty
                 boss.x += Math.cos(boss.angle) * boss.speed;
                 boss.y += Math.sin(boss.angle) * boss.speed;
             }
@@ -1698,6 +1723,10 @@ const helpBook = {
             if (dist < boss.size && now - boss.lastAttackTime > boss.attackCooldown) {
                 player.hp -= boss.damage;
                 boss.lastAttackTime = now;
+            
+                playSound(sounds.bossAttack, 0.5);
+                playSound(sounds.playerDamage, 0.4);
+                boss.lastAttackTime = now;
                 createParticles(player.x, player.y, '#ff0000', 15);
                 updateUI();
             }
@@ -1705,6 +1734,8 @@ const helpBook = {
             // Check if boss is dead
             if (boss.hp <= 0) {
                 boss.active = false;
+                playSound(sounds.bossDead, 0.6);
+
                 createParticles(boss.x, boss.y, '#ffd700', 20);
                 startCubePuzzle();
             }
@@ -1768,6 +1799,7 @@ const helpBook = {
 
         // View control function
         function rotateCubeView(direction) {
+            playSound(sounds.buttonClick, 0.15);
             const cube = document.getElementById('rubiksCube');
             const step = 45; // degrees to rotate per click
             
@@ -1940,6 +1972,9 @@ const helpBook = {
         }
 
         function performCubeMove(move, updateDisplay = true) {
+            if (updateDisplay) {
+                playSound(sounds.buttonClick, 0.15);
+            }
             const face = move.replace("'", "");
             const clockwise = !move.includes("'");
             
@@ -2131,6 +2166,8 @@ const helpBook = {
          }
 
          function openGift() {
+             playSound(sounds.buttonClick, 0.3);
+
              // Hide gift scene
              document.getElementById('giftScene').style.display = 'none';
              
@@ -2147,6 +2184,8 @@ const helpBook = {
          }
 
          function acceptProposal() {
+            playSound(sounds.buttonClick, 0.3);
+
              // Hide proposal scene
              document.getElementById('proposalScene').style.display = 'none';
              
@@ -2490,6 +2529,7 @@ function updateBookPages() {
 }
 
 function nextPage() {
+    playSound(sounds.buttonClick, 0.2);
     if (helpBook.currentPage + helpBook.maxPagesPerSpread < helpBook.totalPages) {
         helpBook.currentPage += helpBook.maxPagesPerSpread;
         updateBookPages();
@@ -2497,19 +2537,102 @@ function nextPage() {
 }
 
 function previousPage() {
+    playSound(sounds.buttonClick, 0.2);
     if (helpBook.currentPage > 1) {
         helpBook.currentPage -= helpBook.maxPagesPerSpread;
         updateBookPages();
     }
 }
 
+const sounds = {
+    // Player sounds
+    shoot: loadSound('sound/shoot.wav'),
+    playerDamage: loadSound('sound/player_damage.wav'),
+    
+    // Enemy sounds
+    enemyDamage: [
+        loadSound('sound/enemy_damage1.wav'),
+        loadSound('sound/enemy_damage2.wav'),
+        loadSound('sound/enemy_damage3.wav')
+    ],
+    enemyDead: loadSound('sound/enemy_dead.wav'),
+    
+    // Pickup sounds
+    pickupHealth: loadSound('sound/pickup_health.wav'),
+    pickupBullets: loadSound('sound/pickup_bullets.wav'),
+    pickupGun: loadSound('sound/pickup_gun.wav'),
+    pickupCube: loadSound('sound/pickup_cube.wav'),
+    
+    // Boss sounds
+    bossSpawn: loadSound('sound/boss_spawn.wav'),
+    bossAttack: loadSound('sound/boss_attack.wav'),
+    bossDamage: loadSound('sound/boss_damage.wav'),
+    bossDead: loadSound('sound/boss_dead.wav'),
+    
+    // UI sounds
+    buttonClick: loadSound('sound/button_click.wav'),
+    gameOver: loadSound('sound/game_over.wav'),
+    victory: loadSound('sound/victory.wav'),
+    
+    // Background music (optional)
+    bgMusic: loadSound('sound/background_music.wav', true) // true for loop
+};
+
+function loadSound(src, loop = false) {
+    const audio = new Audio(src);
+    audio.loop = loop;
+    audio.volume = 0.3; // Default volume
+    
+    // Handle loading errors gracefully
+    audio.addEventListener('error', () => {
+        console.warn(`Failed to load sound: ${src}`);
+    });
+    
+    return audio;
+}
+
+function playSound(sound, volume = 0.3) {
+    if (!sound) return;
+    
+    try {
+        // Create a clone for overlapping sounds
+        const audioClone = sound.cloneNode();
+        audioClone.volume = volume;
+        audioClone.play().catch(e => {
+            // Ignore autoplay policy errors
+            if (!e.message.includes('autoplay')) {
+                console.warn('Sound play failed:', e.message);
+            }
+        });
+    } catch (e) {
+        console.warn('Sound play error:', e.message);
+    }
+}
+
+function playRandomSound(soundArray, volume = 0.3) {
+    if (!soundArray || soundArray.length === 0) return;
+    const randomSound = soundArray[Math.floor(Math.random() * soundArray.length)];
+    playSound(randomSound, volume);
+}
+
+
 function startGame() {
+playSound(sounds.buttonClick, 0.3);
     document.getElementById('helpBook').style.display = 'none';
     gameState = 'playing';
+    
+    // Start background music
+    if (sounds.bgMusic) {
+        sounds.bgMusic.volume = 0.1;
+        sounds.bgMusic.play().catch(e => console.log('Background music autoplay blocked'));
+    }
+    
     updateUI();
 }
         
-         function restartGame() {
+function restartGame() {
+    playSound(sounds.buttonClick, 0.3);
+    
     // Show help book again
     gameState = 'playing';
     
