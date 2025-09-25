@@ -1131,7 +1131,7 @@ const helpBook = {
         
         // Rubik's cube system
         const cubeSystem = {
-            totalParts: 54,
+            totalParts: 3,
             collectedParts: 0,
             colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff8800', '#ffffff'],
             dropChance: 0.3
@@ -1142,8 +1142,8 @@ const helpBook = {
             active: false,
             x: 0,
             y: 0,
-            hp: 10000,
-            maxHp: 10000,
+            hp: 50,
+            maxHp: 50,
             damage: 30,
             size: 250,
             speed: 1.5,
@@ -1495,7 +1495,7 @@ for (let j = enemies.length - 1; j >= 0; j--) {
         
         if (enemy.hp <= 0) {
             // Play enemy death sound
-            playSound(sounds.enemyDead, 0.2);
+            playSound(sounds.enemyDead, 0.3);
             
             // Chance to drop cube part
             if (Math.random() < cubeSystem.dropChance && cubeSystem.collectedParts < cubeSystem.totalParts) {
@@ -1569,6 +1569,7 @@ for (let j = enemies.length - 1; j >= 0; j--) {
                 if (typeData.type === 'melee' && dist < enemy.size) {
                     if (now - enemy.lastAttackTime > 1000) {
                         player.hp -= enemy.damage;
+                        playSound(sounds.playerDamage, 0.3)
                         enemy.lastAttackTime = now;
                         createParticles(player.x, player.y, '#ff0000', 8);
                         updateUI();
@@ -1674,7 +1675,7 @@ for (let j = enemies.length - 1; j >= 0; j--) {
         function spawnBoss() {
             boss.active = true;
             boss.hp = boss.maxHp;
-            playSound(sounds.bossSpawn, 0.5);
+            playSound(sounds.bossSpawn, 1);
             
             // Spawn boss from edge of screen like other enemies
             const side = Math.floor(Math.random() * 4);
@@ -1729,7 +1730,6 @@ for (let j = enemies.length - 1; j >= 0; j--) {
                 boss.lastAttackTime = now;
             
                 playSound(sounds.bossAttack, 0.5);
-                playSound(sounds.playerDamage, 0.4);
                 boss.lastAttackTime = now;
                 createParticles(player.x, player.y, '#ff0000', 15);
                 updateUI();
@@ -2533,7 +2533,7 @@ function updateBookPages() {
 }
 
 function nextPage() {
-    playSound(sounds.buttonClick, 0.2);
+    playSound(sounds.PageFlip, 0.2);
     if (helpBook.currentPage + helpBook.maxPagesPerSpread < helpBook.totalPages) {
         helpBook.currentPage += helpBook.maxPagesPerSpread;
         updateBookPages();
@@ -2541,7 +2541,7 @@ function nextPage() {
 }
 
 function previousPage() {
-    playSound(sounds.buttonClick, 0.2);
+    playSound(sounds.PageFlip, 0.2);
     if (helpBook.currentPage > 1) {
         helpBook.currentPage -= helpBook.maxPagesPerSpread;
         updateBookPages();
@@ -2575,6 +2575,7 @@ const sounds = {
     
     // UI sounds
     buttonClick: loadSound('sound/button_click.wav'),
+    PageFlip: loadSound('sound/page_flip.wav'),
     gameOver: loadSound('sound/game_over.wav'),
     victory: loadSound('sound/victory.wav'),
     
@@ -2621,7 +2622,7 @@ function playRandomSound(soundArray, volume = 0.3) {
 
 
 function startGame() {
-playSound(sounds.buttonClick, 0.3);
+playSound(sounds.buttonClick, 1);
     document.getElementById('helpBook').style.display = 'none';
     gameState = 'playing';
     
