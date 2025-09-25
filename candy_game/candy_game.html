@@ -878,7 +878,7 @@
                 <button class="view-btn" onclick="rotateCubeView('up')">↑ Up</button>
                 <button class="view-btn" onclick="rotateCubeView('down')">↓ Down</button>
                 <button class="view-btn" onclick="rotateCubeView('reset')">Reset View</button>
-                <!-- <button class="view-btn" onclick="solveCubeDebug()" style="background: linear-gradient(45deg, #ff9800, #f57c00); border-color: #ef6c00;">🔧 DEBUG SOLVE</button> -->
+                <button class="view-btn" onclick="solveCubeDebug()" style="background: linear-gradient(45deg, #ff9800, #f57c00); border-color: #ef6c00;">🔧 DEBUG SOLVE</button>
             </div>
             <div class="control-buttons" id="controlButtons"></div>
             <div class="progress-info">
@@ -1438,6 +1438,10 @@ const helpBook = {
                 dx *= 0.707;
                 dy *= 0.707;
             }
+
+            if (mouse.isPressed || keys[' ']) {
+                shootBullet();
+            }
             
             // Update position with world bounds
             player.x = Math.max(player.width/2, 
@@ -1713,7 +1717,7 @@ for (let j = enemies.length - 1; j >= 0; j--) {
             const dist = Math.hypot(dx, dy);
             
             if (dist > 0) {
-                boss.angle = Math.atan2(dy, dx);ty
+                boss.angle = Math.atan2(dy, dx);
                 boss.x += Math.cos(boss.angle) * boss.speed;
                 boss.y += Math.sin(boss.angle) * boss.speed;
             }
