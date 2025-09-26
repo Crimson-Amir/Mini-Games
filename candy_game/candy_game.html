@@ -268,6 +268,34 @@
         0 2px 4px rgba(0,0,0,0.4),
         inset 0 2px 4px rgba(0,0,0,0.3);
 }
+#bossDefeatMessage {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.9);
+    padding: 30px 50px;
+    border-radius: 15px;
+    color: #00ff00;
+    text-align: center;
+    display: none;
+    z-index: 250;
+    font-size: 28px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    border: 3px solid #ffd700;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+    animation: messageGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes messageGlow {
+    from {
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+    }
+    to {
+        box-shadow: 0 0 50px rgba(255, 215, 0, 0.8);
+    }
+}
 
 .book-btn:disabled {
     background: 
@@ -949,6 +977,10 @@
         </div>
     </div>
 </div>
+<div id="bossDefeatMessage">
+    <div style="font-size: 32px; margin-bottom: 15px;">WELL DONE!</div>
+    <div style="font-size: 22px; color: #ffd700;">Be ready for the next step...</div>
+</div>
         </div>
 
     <script>
@@ -1512,6 +1544,7 @@ for (let j = enemies.length - 1; j >= 0; j--) {
                     const dist = Math.hypot(bullet.x - boss.x, bullet.y - boss.y);
                     if (dist < boss.size/2 + bullet.size) {
                         boss.hp -= bullet.damage;
+                        playSound(sounds.bossDamage, 0.5)
                         bullets.splice(i, 1);
                         createParticles(boss.x, boss.y, '#ff4444', 8);
                         break;
@@ -1736,13 +1769,22 @@ for (let j = enemies.length - 1; j >= 0; j--) {
             }
             
             // Check if boss is dead
-            if (boss.hp <= 0) {
-                boss.active = false;
-                playSound(sounds.bossDead, 0.6);
-
-                createParticles(boss.x, boss.y, '#ffd700', 20);
-                startCubePuzzle();
-            }
+// Check if boss is dead
+if (boss.hp <= 0) {
+    boss.active = false;
+    playSound(sounds.bossDead, 0.6);
+    createParticles(boss.x, boss.y, '#ffd700', 20);
+    
+    // Show boss defeat message
+    document.getElementById('bossDefeatMessage').style.display = 'block';
+    
+    // Add 5 second delay before starting cube puzzle
+    setTimeout(() => {
+        // Hide the message
+        document.getElementById('bossDefeatMessage').style.display = 'none';
+        startCubePuzzle();
+    }, 5000); // 5000 milliseconds = 5 seconds
+}
         }
         
         function updateCamera() {
@@ -2580,6 +2622,8 @@ const sounds = {
     victory: loadSound('sound/victory.wav'),
     
     // Background music (optional)
+
+    helpBookMusic: loadSound('sound/help_book_music.wav', true),
     bgMusic: loadSound('sound/background_music.wav', true) // true for loop
 };
 
@@ -2622,11 +2666,18 @@ function playRandomSound(soundArray, volume = 0.3) {
 
 
 function startGame() {
-playSound(sounds.buttonClick, 1);
+    playSound(sounds.buttonClick, 0.3);
     document.getElementById('helpBook').style.display = 'none';
     gameState = 'playing';
     
-    // Start background music
+    // ADD THESE NEW LINES:
+    // Stop help book music
+    if (sounds.helpBookMusic) {
+        sounds.helpBookMusic.pause();
+        sounds.helpBookMusic.currentTime = 0;
+    }
+    
+    // Start background music (existing code)
     if (sounds.bgMusic) {
         sounds.bgMusic.volume = 0.1;
         sounds.bgMusic.play().catch(e => console.log('Background music autoplay blocked'));
@@ -2640,6 +2691,27 @@ function restartGame() {
     
     // Show help book again
     gameState = 'playing';
+    document.getElementById('bossDefeatMessage').style.display = 'none';
+
+    // ADD THESE NEW LINES:
+    // Stop all music
+    
+    // Stop all music
+    if (sounds.helpBookMusic) {
+        sounds.helpBookMusic.pause();
+        sounds.helpBookMusic.currentTime = 0;
+    }
+    if (sounds.bgMusic) {
+        sounds.bgMusic.pause();
+        sounds.bgMusic.currentTime = 0;
+    }
+    
+    // ADD THIS: Restart background music for gameplay
+    if (sounds.bgMusic) {
+        sounds.bgMusic.volume = 0.1;
+        sounds.bgMusic.play().catch(e => console.log('Background music autoplay blocked'));
+    }
+    
     
     // Reset game state
     player.hp = 100;
@@ -2738,6 +2810,17 @@ function restartGame() {
             
             requestAnimationFrame(gameLoop);
         }
+        if (sounds.helpBookMusic) {
+    sounds.helpBookMusic.volume = 0.2;
+    // Use user interaction to start music (modern browsers require this)
+    document.addEventListener('click', function startHelpMusic() {
+        if (gameState === 'helpBook') {
+            sounds.helpBookMusic.play().catch(e => console.log('Help book music autoplay blocked'));
+        }
+        // Remove this listener after first click
+        document.removeEventListener('click', startHelpMusic);
+    }, { once: true });
+}
         
         // Initialize UI and start game
 // Initialize UI and start game
