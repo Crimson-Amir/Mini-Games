@@ -911,10 +911,6 @@
             <div class="control-buttons" id="controlButtons"></div>
             <div class="progress-info">
                 <div>Progress: <span id="cubeProgress">0</span>/6 faces solved</div>
-                <div style="font-size: 12px; color: #ccc; margin-top: 5px;">
-                    F=Front, B=Back, R=Right, L=Left, U=Up, D=Down<br>
-                    ' = Counter-clockwise rotation
-                </div>
             </div>
         </div>
         
@@ -1163,7 +1159,7 @@ const helpBook = {
         
         // Rubik's cube system
         const cubeSystem = {
-            totalParts: 3,
+            totalParts: 54,
             collectedParts: 0,
             colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff8800', '#ffffff'],
             dropChance: 0.3
@@ -1174,8 +1170,8 @@ const helpBook = {
             active: false,
             x: 0,
             y: 0,
-            hp: 50,
-            maxHp: 50,
+            hp: 5000,
+            maxHp: 5000,
             damage: 30,
             size: 250,
             speed: 1.5,
@@ -1314,7 +1310,7 @@ const helpBook = {
             if (now - player.lastShotTime < gunData.cooldown) return;
             if (player.bullets <= 0) return;
 
-            playSound(sounds.shoot, 0.2);
+            playSound(sounds.shoot, 0.1);
 
             for (let i = 0; i < gunData.bulletsPerShot; i++) {
                 const spread = (gunData.bulletsPerShot > 1)
