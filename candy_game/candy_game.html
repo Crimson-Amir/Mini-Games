@@ -896,7 +896,7 @@
         
         <div id="cubePuzzle">
             <h2>Solve the Rubik's Cube!</h2>
-            <div id="cubeTimer" style="font-size: 18px; margin: 10px 0;">Time: <span id="timeLeft">3:00</span></div>
+            <div id="cubeTimer" style="font-size: 18px; margin: 10px 0;">Time: <span id="timeLeft">10:00</span></div>
             <div id="cubeContainer">
                 <div class="cube3d" id="rubiksCube"></div>
             </div>
@@ -906,7 +906,7 @@
                 <button class="view-btn" onclick="rotateCubeView('up')">↑ Up</button>
                 <button class="view-btn" onclick="rotateCubeView('down')">↓ Down</button>
                 <button class="view-btn" onclick="rotateCubeView('reset')">Reset View</button>
-                <button class="view-btn" onclick="solveCubeDebug()" style="background: linear-gradient(45deg, #ff9800, #f57c00); border-color: #ef6c00;">🔧 DEBUG SOLVE</button>
+                <!-- <button class="view-btn" onclick="solveCubeDebug()" style="background: linear-gradient(45deg, #ff9800, #f57c00); border-color: #ef6c00;">🔧 DEBUG SOLVE</button> -->
             </div>
             <div class="control-buttons" id="controlButtons"></div>
             <div class="progress-info">
@@ -1159,10 +1159,10 @@ const helpBook = {
         
         // Rubik's cube system
         const cubeSystem = {
-            totalParts: 54,
+            totalParts: 1,
             collectedParts: 0,
             colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff8800', '#ffffff'],
-            dropChance: 0.3
+            dropChance: 0.99
         };
         
         // Boss system
@@ -1170,8 +1170,8 @@ const helpBook = {
             active: false,
             x: 0,
             y: 0,
-            hp: 5000,
-            maxHp: 5000,
+            hp: 50,
+            maxHp: 50,
             damage: 30,
             size: 250,
             speed: 1.5,
@@ -1825,7 +1825,7 @@ if (boss.hp <= 0) {
         
         // FIXED RUBIK'S CUBE IMPLEMENTATION
         let rubiksCube = {
-            timeLeft: 180,
+            timeLeft: 600,
             timer: null,
             solved: false,
             faces: {
@@ -1906,7 +1906,7 @@ if (boss.hp <= 0) {
 
         function startCubePuzzle() {
             gameState = 'cubePuzzle';
-            rubiksCube.timeLeft = 180;
+            rubiksCube.timeLeft = 600;
             rubiksCube.solved = false;
             
             // Reset cube to solved state first
