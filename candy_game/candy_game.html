@@ -1107,7 +1107,7 @@ const helpBook = {
             y: WORLD_HEIGHT / 2,
             width: 32,
             height: 32,
-            speed: 4,
+            speed: 2,
             hp: 100,
             maxHp: 100,
             bullets: 30,
@@ -1159,10 +1159,10 @@ const helpBook = {
         
         // Rubik's cube system
         const cubeSystem = {
-            totalParts: 1,
+            totalParts: 54,
             collectedParts: 0,
             colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff8800', '#ffffff'],
-            dropChance: 0.99
+            dropChance: 0.3
         };
         
         // Boss system
@@ -1174,7 +1174,7 @@ const helpBook = {
             maxHp: 50,
             damage: 30,
             size: 250,
-            speed: 1.5,
+            speed: 0.7,
             angle: 0,
             lastAttackTime: 0,
             attackCooldown: 2000
@@ -1190,7 +1190,7 @@ const helpBook = {
                 name: 'Pink Monster',
                 hp: 30,
                 damage: 3,
-                speed: 1.5,
+                speed: 0.7,
                 size: 30,
                 color: '#ff69b4',
                 type: 'melee',
@@ -1200,7 +1200,7 @@ const helpBook = {
                 name: 'Rozi',
                 hp: 50,
                 damage: 7,
-                speed: 1.2,
+                speed: 0.6,
                 size: 40,
                 color: '#8b4513',
                 type: 'melee',
@@ -1210,7 +1210,7 @@ const helpBook = {
                 name: 'Nigel',
                 hp: 100,
                 damage: 15,
-                speed: 0.8,
+                speed: 0.4,
                 size: 60,
                 color: '#654321',
                 type: 'hybrid',
@@ -1220,7 +1220,7 @@ const helpBook = {
                 name: 'College Manager',
                 hp: 50,
                 damage: 15,
-                speed: 1.0,
+                speed: 0.5,
                 size: 50,
                 color: '#2f4f4f',
                 type: 'ranged',
@@ -1230,7 +1230,7 @@ const helpBook = {
                 name: 'Ghost',
                 hp: 70,
                 damage: 20,
-                speed: 3.0,
+                speed: 1.5,
                 size: 60,
                 color: 'rgba(200, 200, 255, 0.7)',
                 type: 'melee',
@@ -1240,7 +1240,7 @@ const helpBook = {
                 name: 'Witch Girl',
                 hp: 20,
                 damage: 7,
-                speed: 1.8,
+                speed: 0.6,
                 size: 35,
                 color: '#800080',
                 type: 'melee',
@@ -1250,7 +1250,7 @@ const helpBook = {
                 name: 'Blood Monster',
                 hp: 150,
                 damage: 30,
-                speed: 1.2,
+                speed: 0.6,
                 size: 100,
                 color: '#ff0000',
                 type: 'melee',
